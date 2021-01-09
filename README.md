@@ -2,22 +2,22 @@
 
 ## Requirements:
 
-• Indexer
+- Indexer
 	- Index saved efficiently
 	- Stop Words (there or not)
 	- Stemming (yes / no)
-• Search module
+- Search module
 	- User query length?
 	- Free text or Boolean?
 	- Phrase / proximity search?
-• Retrieval model\s
+- Retrieval model\s
 	- Which one to select?
 	- TFIDF? BM25? LM?
 	- New novel model optimized for task
-• Interface (UI)
+- Interface (UI)
 	- Web Interface / mobile?
 	- How results are displayed
-• LARGE data collection
+- LARGE data collection
 	- 100Ks / Millions 
 	- Source? (books, chapters, pages)
 	- Text / Multimedia?
@@ -25,8 +25,8 @@
 	- Online / Offline system 
 		- Live data collection 
 		- One user / multiuser
-• Real-time search
-• Hosted on a server
+- Real-time search
+- Hosted on a server
 
 ## More
 
