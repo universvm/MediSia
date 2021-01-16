@@ -24,7 +24,7 @@ def select_and_save_biopapers(
         Path to .txt file containing all bio-papers journals in unpaywall.
 
     """
-    biojournals = np.genfromtxt(biojournals_path, delimiter='\n', fmt="%s")
+    biojournals = np.genfromtxt(biojournals_path, delimiter='\n').tolist()
     biojournals_count = 0
     # Open JSONL Unpaywall file:
     with jsonlines.open(unpaywall_path) as reader:
@@ -41,3 +41,7 @@ def select_and_save_biopapers(
                         biojournals_count += 1
 
     print(f'Found {biojournals_count} Biology-related journals.')
+
+
+if __name__ == '__main__':
+    select_and_save_biopapers()
