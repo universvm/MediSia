@@ -261,7 +261,7 @@ def obtain_and_save_abstract(
     # Open output and input files:
     with jsonlines.open(biopapers_path) as reader, jsonlines.open(output_path, mode="a") as writer:
         # Create Muliprocessing Pool:
-        pool = mp.Pool(1)
+        pool = mp.Pool()
         # For each paper, extract abstract:
         for paper_w_abstract_dict in pool.imap(get_abstract, reader):
             print('hello')
