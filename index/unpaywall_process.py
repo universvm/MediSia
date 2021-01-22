@@ -157,6 +157,7 @@ def _get_abstract_w_pubmed(doi: str) -> t.Union[bool, t.Optional[str]]:
 
 
 def _get_abstract_w_selenium(doi_url: str) -> t.Union[bool, t.Optional[str]]:
+    found_abstract = False
     try:
         # Create web-browser session
         options = webdriver.FirefoxOptions()
