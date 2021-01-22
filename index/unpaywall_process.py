@@ -131,6 +131,7 @@ def _get_abstract_w_crossref(doi: str) -> t.Union[bool, t.Optional[str]]:
         print('Abstract not found, returning None.')
         return found_abstract, None
 
+
 def _get_abstract_w_pubmed(doi: str) -> t.Union[bool, t.Optional[str]]:
     found_abstract = False
     # Initialize Fetcher:
@@ -264,8 +265,6 @@ def obtain_and_save_abstract(
         pool = mp.Pool()
         # For each paper, extract abstract:
         for paper_w_abstract_dict in pool.imap(get_abstract, reader):
-            print('hello')
-            print(paper_w_abstract_dict)
             writer.write(paper_w_abstract_dict)
             # Logging the source of the paper
             results_stats[paper_w_abstract_dict["abstract_source"]] += 1
