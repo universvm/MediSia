@@ -185,7 +185,10 @@ def _get_abstract_w_selenium(doi_url: str) -> t.Union[bool, t.Optional[str]]:
         else:
             return found_abstract, None
     except:
-        return found_abstract, None
+        try:
+            web_session.get(doi_url)
+        except:
+            return found_abstract, None
 
 
 def get_abstract(paper_dict: dict) -> dict:
