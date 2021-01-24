@@ -5,12 +5,14 @@ import urllib.request, json
 import typing as t
 from pathlib import Path
 
+import itertools
 
 from bs4 import BeautifulSoup
 import metapub
 from selenium import webdriver
 from metapub import PubMedFetcher
-
+from xvfbwrapper import Xvfb
+import time
 
 import jsonlines
 import numpy as np
@@ -19,6 +21,7 @@ from config import (
     PAPERS_JSON_FOLDER,
     BIOPAPERS_JSON_PATH,
     BIOJOURNALS_FILE,
+    BIOPAPERS_WOUT_ABSTRACT_JSON_PATH,
     BIOPAPERS_W_ABSTRACT_JSON_PATH,
 )
 
@@ -90,8 +93,6 @@ def _get_abstract_w_bioarxiv(doi: str) -> t.Union[bool, t.Optional[str]]:
         # Open URL and attempt retrieval
         with urllib.request.urlopen(f"https://api.biorxiv.org/details/biorxiv/{doi}") as url:
             data = json.loads(url.read().decode())
-            import pprint
-            pprint.pprint(data)
             if data['messages'][0]['status'] == "ok":
                 abstract = data['collection'][-1]["abstract"]
                 # Jackpot baby
@@ -99,7 +100,7 @@ def _get_abstract_w_bioarxiv(doi: str) -> t.Union[bool, t.Optional[str]]:
                 print('Abstract Found.')
                 return found_abstract, abstract
             else:
-                print('Abstract not found, returning None.')
+                #print('Abstract not found, returning None.')
                 return found_abstract, None
     except:
         return found_abstract, None
@@ -110,9 +111,7 @@ def _get_abstract_w_crossref(doi: str) -> t.Union[bool, t.Optional[str]]:
     try:
         # Open URL and attempt retrieval
         with urllib.request.urlopen(f"https://api.crossref.org/works/{doi}") as url:
-            print(0)
             data = json.loads(url.read().decode())
-            print(data)
             if "abstract" in data.keys():
                 abstract = data['abstract']
                 # If abstract is sufficiently long
@@ -125,10 +124,10 @@ def _get_abstract_w_crossref(doi: str) -> t.Union[bool, t.Optional[str]]:
                     print('Abstract was too short, returning None.')
                     return found_abstract, None
             else:
-                print('Abstract not found, returning None.')
+                #print('Abstract not found, returning None.')
                 return found_abstract, None
     except:
-        print('Abstract not found, returning None.')
+        #print('Abstract not found, returning None.')
         return found_abstract, None
 
 
@@ -149,7 +148,7 @@ def _get_abstract_w_pubmed(doi: str) -> t.Union[bool, t.Optional[str]]:
             print('Abstract was too short, returning None.')
             return found_abstract, None
     except metapub.exceptions.MetaPubError:
-        print('Abstract not found, returning None.')
+        #print('Abstract not found, returning None.')
         return found_abstract, None
     except:
         print("Unknown exception, returning None")
@@ -159,6 +158,8 @@ def _get_abstract_w_pubmed(doi: str) -> t.Union[bool, t.Optional[str]]:
 def _get_abstract_w_selenium(doi_url: str) -> t.Union[bool, t.Optional[str]]:
     found_abstract = False
     try:
+        vdisplay = Xvfb(width=1280, height=740)
+        vdisplay.start()
         # Create web-browser session
         options = webdriver.FirefoxOptions()
         options.add_argument('--headless')
@@ -170,6 +171,8 @@ def _get_abstract_w_selenium(doi_url: str) -> t.Union[bool, t.Optional[str]]:
         doi_html_page = web_session.page_source
         # Close page
         web_session.quit()
+        vdisplay.stop()
+
         soup = BeautifulSoup(doi_html_page, 'html.parser')
         text = soup.get_text().lower()
         # Remove string control characters:
@@ -187,6 +190,7 @@ def _get_abstract_w_selenium(doi_url: str) -> t.Union[bool, t.Optional[str]]:
     except:
         try:
             web_session.get(doi_url)
+            return found_abstract, None
         except:
             return found_abstract, None
 
@@ -230,11 +234,10 @@ def get_abstract(paper_dict: dict) -> dict:
                 print('No methods have extracted the abstract, trying Selenium')
                 abstract_status, abstract = _get_abstract_w_selenium(doi_url)
                 if abstract_status and abstract:
-                    paper_dict['abstract'] = abstract
+                    paper_dict['abstract'] = abstract[:650]
                     paper_dict['abstract_source'] = "selenium"
                 else:
-                    print(paper_dict)
-                    print('Abstract not found.')
+                    print('Abstract not found at all.')
                     paper_dict['abstract'] = ''
                     paper_dict['abstract_source'] = "na"
 
@@ -243,7 +246,8 @@ def get_abstract(paper_dict: dict) -> dict:
 
 def obtain_and_save_abstract(
     biopapers_path: Path = BIOPAPERS_JSON_PATH,
-    output_path: Path = BIOPAPERS_W_ABSTRACT_JSON_PATH,
+    output_path_with_abstract: Path = BIOPAPERS_W_ABSTRACT_JSON_PATH,
+    output_path_without_abstract: Path = BIOPAPERS_WOUT_ABSTRACT_JSON_PATH,
 ) -> dict:
     """
     Creates a loop through all papers and attempts to find an abstract. Uses
@@ -263,15 +267,30 @@ def obtain_and_save_abstract(
     """
     # Create stats for results
     results_stats = {k : 0 for k in ["bioarxiv", "pubmed", "crossref", "selenium", "na"]}
+    # Calculate last papers searched overall so they can be skipped
+    with jsonlines.open(output_path_with_abstract, mode="r") as wab, jsonlines.open(output_path_without_abstract, mode="r") as woutab:
+        last_checkpoint = len(list(wab)) + len(list(woutab))
+    
     # Open output and input files:
-    with jsonlines.open(biopapers_path) as reader, jsonlines.open(output_path, mode="a") as writer:
+    with jsonlines.open(biopapers_path) as reader, jsonlines.open(output_path_with_abstract, mode="a") as writer, jsonlines.open(output_path_without_abstract, mode="a") as writer2:
+        
         # Create Muliprocessing Pool:
         pool = mp.Pool()
         # For each paper, extract abstract:
-        for paper_w_abstract_dict in pool.imap(get_abstract, reader):
-            writer.write(paper_w_abstract_dict)
+        #for paper_w_abstract_dict in pool.imap(get_abstract, reader):
+        for paper_w_abstract_dict in pool.imap(get_abstract, itertools.islice(reader, last_checkpoint, None)):
+            
+            if paper_w_abstract_dict["abstract_source"] == 'na':
+                print(0)
+                writer2.write(paper_w_abstract_dict)
+            else:
+                print(1)
+                writer.write(paper_w_abstract_dict)
+
             # Logging the source of the paper
             results_stats[paper_w_abstract_dict["abstract_source"]] += 1
+            time.sleep(1)
+            print(results_stats)
 
     print("Finished processing results")
     print(results_stats)
@@ -279,4 +298,4 @@ def obtain_and_save_abstract(
 
 
 if __name__ == '__main__':
-    _ = obtain_and_save_abstract(BIOPAPERS_JSON_PATH, BIOPAPERS_W_ABSTRACT_JSON_PATH)
+    _ = obtain_and_save_abstract()
