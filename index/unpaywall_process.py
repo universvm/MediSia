@@ -318,11 +318,13 @@ def obtain_and_save_abstract(
     # Create stats for results
     results_stats = {k: 0 for k in ["bioarxiv", "pubmed", "crossref", "selenium", "na"]}
     # Calculate last papers searched overall so they can be skipped
-    with jsonlines.open(output_path_with_abstract, mode="r") as wab, jsonlines.open(
-        output_path_without_abstract, mode="r"
-    ) as woutab:
-        last_checkpoint = len(list(wab)) + len(list(woutab))
-
+    try:
+        with jsonlines.open(output_path_with_abstract, mode="r") as wab, jsonlines.open(
+            output_path_without_abstract, mode="r"
+        ) as woutab:
+            last_checkpoint = len(list(wab)) + len(list(woutab))
+    except:
+        last_checkpoint = 0
     # Open output and input files:
     with jsonlines.open(biopapers_path) as reader, jsonlines.open(
         output_path_with_abstract, mode="a"
