@@ -152,7 +152,7 @@ def _get_abstract_w_crossref(doi: str) -> t.Union[bool, t.Optional[str]]:
         with urllib.request.urlopen(f"https://api.crossref.org/works/{doi}") as url:
             data = json.loads(url.read().decode())
             print(data["message"]["abstract"])
-            if "abstracta" in data["message"].keys():
+            if "abstract" in data["message"].keys():
                 abstract = data["message"]["abstract"]
                 abstract = abstract.lstrip("<jats:p>")
                 abstract = abstract.rstrip("<jats:p>")
@@ -170,7 +170,6 @@ def _get_abstract_w_crossref(doi: str) -> t.Union[bool, t.Optional[str]]:
                     url = data["message"]["link"][0]["URL"]
                     if url.endswith(".pdf"):
                         found_abstract, abstract = _get_abstract_from_pdf(url)
-                        print(abstract)
                     else:
                         return found_abstract, None
 
