@@ -6,16 +6,22 @@ import typing as t
 from pathlib import Path
 
 import itertools
-
 from bs4 import BeautifulSoup
 import metapub
 from selenium import webdriver
 from metapub import PubMedFetcher
 from xvfbwrapper import Xvfb
 import time
-
 import jsonlines
 import numpy as np
+
+from io import StringIO, BytesIO
+from pdfminer.converter import TextConverter
+from pdfminer.layout import LAParams
+from pdfminer.pdfdocument import PDFDocument
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer.pdfpage import PDFPage
+from pdfminer.pdfparser import PDFParser
 
 from config import (
     PAPERS_JSON_FOLDER,
@@ -87,20 +93,53 @@ def select_and_save_biopapers(
     print(f"Found {biojournals_count} Biology-related journals.")
 
 
+def clean_text(text: str) -> str:
+    # Remove string control characters:
+    text = re.sub(r"[\n\r\t]", "", text)
+    # Remove special characters but not space
+    text = re.sub(r"[^a-zA-Z0-9]+", " ", text)
+    return text
+
+
+def _get_abstract_from_pdf(pdf_url) -> t.Union[bool, t.Optional[str]]:
+    found_abstract = False
+    try:
+        pdf_response = requests.get(pdf_url)
+        output_string = StringIO()
+        with BytesIO(pdf_response.content) as open_pdf_file:
+            parser = PDFParser(open_pdf_file)
+            doc = PDFDocument(parser)
+            rsrcmgr = PDFResourceManager()
+            device = TextConverter(rsrcmgr, output_string, laparams=LAParams())
+            interpreter = PDFPageInterpreter(rsrcmgr, device)
+            for page in PDFPage.create_pages(doc):
+                interpreter.process_page(page)
+                break
+            abstract = output_string.getvalue().lower()
+            abstract = clean_text(abstract)
+            if "abstract" in abstract:
+                abstract = abstract.split("abstract", 1)[-1]
+    except:
+        print("PDF Not found.")
+        return found_abstract, None
+
+
 def _get_abstract_w_bioarxiv(doi: str) -> t.Union[bool, t.Optional[str]]:
     found_abstract = False
     try:
         # Open URL and attempt retrieval
-        with urllib.request.urlopen(f"https://api.biorxiv.org/details/biorxiv/{doi}") as url:
+        with urllib.request.urlopen(
+            f"https://api.biorxiv.org/details/biorxiv/{doi}"
+        ) as url:
             data = json.loads(url.read().decode())
-            if data['messages'][0]['status'] == "ok":
-                abstract = data['collection'][-1]["abstract"]
+            if data["messages"][0]["status"] == "ok":
+                abstract = data["collection"][-1]["abstract"]
                 # Jackpot baby
                 found_abstract = True
-                print('Abstract Found.')
+                print("Abstract Found.")
                 return found_abstract, abstract
             else:
-                #print('Abstract not found, returning None.')
+                # print('Abstract not found, returning None.')
                 return found_abstract, None
     except:
         return found_abstract, None
@@ -112,22 +151,33 @@ def _get_abstract_w_crossref(doi: str) -> t.Union[bool, t.Optional[str]]:
         # Open URL and attempt retrieval
         with urllib.request.urlopen(f"https://api.crossref.org/works/{doi}") as url:
             data = json.loads(url.read().decode())
-            if "abstract" in data.keys():
-                abstract = data['abstract']
+            print(data["message"]["abstract"])
+            if "abstracta" in data["message"].keys():
+                abstract = data["message"]["abstract"]
+                abstract = abstract.lstrip("<jats:p>")
+                abstract = abstract.rstrip("<jats:p>")
                 # If abstract is sufficiently long
                 if len(abstract) > 20:
                     # Jackpot baby
                     found_abstract = True
-                    print('Abstract Found.')
+                    print("Abstract Found.")
                     return found_abstract, abstract
                 else:
-                    print('Abstract was too short, returning None.')
+                    print("Abstract was too short, returning None.")
                     return found_abstract, None
             else:
-                #print('Abstract not found, returning None.')
+                if "link" in data["message"].keys():
+                    url = data["message"]["link"][0]["URL"]
+                    if url.endswith(".pdf"):
+                        found_abstract, abstract = _get_abstract_from_pdf(url)
+                        print(abstract)
+                    else:
+                        return found_abstract, None
+
+                # print('Abstract not found, returning None.')
                 return found_abstract, None
     except:
-        #print('Abstract not found, returning None.')
+        # print('Abstract not found, returning None.')
         return found_abstract, None
 
 
@@ -142,13 +192,13 @@ def _get_abstract_w_pubmed(doi: str) -> t.Union[bool, t.Optional[str]]:
         if len(abstract) > 20:
             # Jackpot baby
             found_abstract = True
-            print('Abstract Found.')
+            print("Abstract Found.")
             return found_abstract, abstract
         else:
-            print('Abstract was too short, returning None.')
+            print("Abstract was too short, returning None.")
             return found_abstract, None
     except metapub.exceptions.MetaPubError:
-        #print('Abstract not found, returning None.')
+        # print('Abstract not found, returning None.')
         return found_abstract, None
     except:
         print("Unknown exception, returning None")
@@ -162,7 +212,7 @@ def _get_abstract_w_selenium(doi_url: str) -> t.Union[bool, t.Optional[str]]:
         vdisplay.start()
         # Create web-browser session
         options = webdriver.FirefoxOptions()
-        options.add_argument('--headless')
+        options.add_argument("--headless")
         options.add_argument("--enable-javascript")
         web_session = webdriver.Firefox()
         found_abstract = False
@@ -173,14 +223,14 @@ def _get_abstract_w_selenium(doi_url: str) -> t.Union[bool, t.Optional[str]]:
         web_session.quit()
         vdisplay.stop()
 
-        soup = BeautifulSoup(doi_html_page, 'html.parser')
+        soup = BeautifulSoup(doi_html_page, "html.parser")
         text = soup.get_text().lower()
         # Remove string control characters:
-        text = re.sub(r'[\n\r\t]', "", text)
+        text = re.sub(r"[\n\r\t]", "", text)
         # Remove special characters but not space
         text = re.sub(r"[^a-zA-Z0-9]+", " ", text)
         # Extract all text after "Abstract"
-        abstract = text.split('abstract', 1)[-1]
+        abstract = text.split("abstract", 1)[-1]
         # TODO: We could add some other clean up functions here
         if len(abstract) > 0:
             found_abstract = True
@@ -215,31 +265,31 @@ def get_abstract(paper_dict: dict) -> dict:
     # Attempt to use Bioarxiv API
     abstract_status, abstract = _get_abstract_w_bioarxiv(doi)
     if abstract_status and abstract:
-        paper_dict['abstract'] = abstract
-        paper_dict['abstract_source'] = "bioarxiv"
+        paper_dict["abstract"] = abstract
+        paper_dict["abstract_source"] = "bioarxiv"
     else:
         # Attempt to use Pubmed:
         abstract_status, abstract = _get_abstract_w_pubmed(doi)
         if abstract_status and abstract:
-            paper_dict['abstract'] = abstract
-            paper_dict['abstract_source'] = "pubmed"
+            paper_dict["abstract"] = abstract
+            paper_dict["abstract_source"] = "pubmed"
         else:
             # Attempt to use Crossref:
             abstract_status, abstract = _get_abstract_w_crossref(doi)
             if abstract_status and abstract:
-                paper_dict['abstract'] = abstract
-                paper_dict['abstract_source'] = "crossref"
+                paper_dict["abstract"] = abstract
+                paper_dict["abstract_source"] = "crossref"
             else:
                 # Attempt to use Selenium
-                print('No methods have extracted the abstract, trying Selenium')
+                print("No methods have extracted the abstract, trying Selenium")
                 abstract_status, abstract = _get_abstract_w_selenium(doi_url)
                 if abstract_status and abstract:
-                    paper_dict['abstract'] = abstract[:650]
-                    paper_dict['abstract_source'] = "selenium"
+                    paper_dict["abstract"] = abstract[:650]
+                    paper_dict["abstract_source"] = "selenium"
                 else:
-                    print('Abstract not found at all.')
-                    paper_dict['abstract'] = ''
-                    paper_dict['abstract_source'] = "na"
+                    print("Abstract not found at all.")
+                    paper_dict["abstract"] = ""
+                    paper_dict["abstract_source"] = "na"
 
     return paper_dict
 
@@ -266,21 +316,27 @@ def obtain_and_save_abstract(
         Dictionary {source_type: count}
     """
     # Create stats for results
-    results_stats = {k : 0 for k in ["bioarxiv", "pubmed", "crossref", "selenium", "na"]}
+    results_stats = {k: 0 for k in ["bioarxiv", "pubmed", "crossref", "selenium", "na"]}
     # Calculate last papers searched overall so they can be skipped
-    with jsonlines.open(output_path_with_abstract, mode="r") as wab, jsonlines.open(output_path_without_abstract, mode="r") as woutab:
+    with jsonlines.open(output_path_with_abstract, mode="r") as wab, jsonlines.open(
+        output_path_without_abstract, mode="r"
+    ) as woutab:
         last_checkpoint = len(list(wab)) + len(list(woutab))
-    
+
     # Open output and input files:
-    with jsonlines.open(biopapers_path) as reader, jsonlines.open(output_path_with_abstract, mode="a") as writer, jsonlines.open(output_path_without_abstract, mode="a") as writer2:
-        
+    with jsonlines.open(biopapers_path) as reader, jsonlines.open(
+        output_path_with_abstract, mode="a"
+    ) as writer, jsonlines.open(output_path_without_abstract, mode="a") as writer2:
+
         # Create Muliprocessing Pool:
         pool = mp.Pool()
         # For each paper, extract abstract:
-        #for paper_w_abstract_dict in pool.imap(get_abstract, reader):
-        for paper_w_abstract_dict in pool.imap(get_abstract, itertools.islice(reader, last_checkpoint, None)):
-            
-            if paper_w_abstract_dict["abstract_source"] == 'na':
+        # for paper_w_abstract_dict in pool.imap(get_abstract, reader):
+        for paper_w_abstract_dict in pool.imap(
+            get_abstract, itertools.islice(reader, last_checkpoint, None)
+        ):
+
+            if paper_w_abstract_dict["abstract_source"] == "na":
                 print(0)
                 writer2.write(paper_w_abstract_dict)
             else:
@@ -289,7 +345,6 @@ def obtain_and_save_abstract(
 
             # Logging the source of the paper
             results_stats[paper_w_abstract_dict["abstract_source"]] += 1
-            time.sleep(1)
             print(results_stats)
 
     print("Finished processing results")
@@ -297,5 +352,5 @@ def obtain_and_save_abstract(
     return results_stats
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     _ = obtain_and_save_abstract()
