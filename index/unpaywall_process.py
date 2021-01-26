@@ -117,8 +117,14 @@ def _get_abstract_from_pdf(pdf_url) -> t.Union[bool, t.Optional[str]]:
                 break
             abstract = output_string.getvalue().lower()
             abstract = clean_text(abstract)
+            # Identify title abstract and remove everything else:
             if "abstract" in abstract:
                 abstract = abstract.split("abstract", 1)[-1]
+            # Identify introduction and take everything before:
+            if "introduction" in abstract:
+                abstract = abstract.split("introduction", 1)[0]
+            found_abstract = True
+        return found_abstract, abstract
     except:
         print("PDF Not found.")
         return found_abstract, None
@@ -151,11 +157,10 @@ def _get_abstract_w_crossref(doi: str) -> t.Union[bool, t.Optional[str]]:
         # Open URL and attempt retrieval
         with urllib.request.urlopen(f"https://api.crossref.org/works/{doi}") as url:
             data = json.loads(url.read().decode())
-            print(data["message"]["abstract"])
             if "abstract" in data["message"].keys():
                 abstract = data["message"]["abstract"]
                 abstract = abstract.lstrip("<jats:p>")
-                abstract = abstract.rstrip("<jats:p>")
+                abstract = abstract.rstrip("</jats:p>")
                 # If abstract is sufficiently long
                 if len(abstract) > 20:
                     # Jackpot baby
@@ -170,6 +175,7 @@ def _get_abstract_w_crossref(doi: str) -> t.Union[bool, t.Optional[str]]:
                     url = data["message"]["link"][0]["URL"]
                     if url.endswith(".pdf"):
                         found_abstract, abstract = _get_abstract_from_pdf(url)
+                        return found_abstract, abstract
                     else:
                         return found_abstract, None
 
@@ -221,24 +227,32 @@ def _get_abstract_w_selenium(doi_url: str) -> t.Union[bool, t.Optional[str]]:
         # Close page
         web_session.quit()
         vdisplay.stop()
-
-        soup = BeautifulSoup(doi_html_page, "html.parser")
-        text = soup.get_text().lower()
-        # Remove string control characters:
-        text = re.sub(r"[\n\r\t]", "", text)
-        # Remove special characters but not space
-        text = re.sub(r"[^a-zA-Z0-9]+", " ", text)
-        # Extract all text after "Abstract"
-        abstract = text.split("abstract", 1)[-1]
-        # TODO: We could add some other clean up functions here
-        if len(abstract) > 0:
-            found_abstract = True
+        # Attempt to find PDF url in page
+        html_page = BeautifulSoup(doi_html_page)
+        pdf_links = [link.get('href') for link in html_page.find_all('a') if link.get('href').endswith('pdf')]
+        found_abstract, abstract = _get_abstract_from_pdf(pdf_links[0])
+        if found_abstract and abstract:
+            print("Found Abstract from PDF")
             return found_abstract, abstract
         else:
-            return found_abstract, None
+            soup = BeautifulSoup(doi_html_page, "html.parser")
+            text = soup.get_text().lower()
+            # Remove string control characters:
+            text = re.sub(r"[\n\r\t]", "", text)
+            # Remove special characters but not space
+            text = re.sub(r"[^a-zA-Z0-9]+", " ", text)
+            # Extract all text after "Abstract"
+            abstract = text.split("abstract", 1)[-1]
+            # TODO: We could add some other clean up functions here
+            if len(abstract) > 0:
+                found_abstract = True
+                return found_abstract, abstract
+            else:
+                return found_abstract, None
     except:
         try:
-            web_session.get(doi_url)
+            web_session.quit()
+            vdisplay.stop()
             return found_abstract, None
         except:
             return found_abstract, None
@@ -336,17 +350,14 @@ def obtain_and_save_abstract(
         for paper_w_abstract_dict in pool.imap(
             get_abstract, itertools.islice(reader, last_checkpoint, None)
         ):
-
             if paper_w_abstract_dict["abstract_source"] == "na":
-                print(0)
                 writer2.write(paper_w_abstract_dict)
             else:
-                print(1)
                 writer.write(paper_w_abstract_dict)
-
             # Logging the source of the paper
             results_stats[paper_w_abstract_dict["abstract_source"]] += 1
             print(results_stats)
+            del paper_w_abstract_dict
 
     print("Finished processing results")
     print(results_stats)
