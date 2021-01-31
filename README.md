@@ -1,6 +1,6 @@
 ## There are two files we need to run for the whole process
 1. builder.py: We could run this file to generate our json file of inverted index and some other files. These files should be generated before starting our system.
-2. main.py: If we run this file, information retrival system will start. For now, it only offer two functions: Boolean and TFIDF.
+2. main.py: If we run this file, information retrival system will start. For now, it only offer two functions: Boolean (AND, OR, NOT AND, NOT OR) and TFIDF.
 
 
 #### If you just want to see the demo and the result, You just need to run the main.py. No need to run builder.py since I have kept the generated files. 
