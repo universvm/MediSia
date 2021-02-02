@@ -1,17 +1,21 @@
-## There are two files we need to run for the whole process
+## Main code structure
+There are two files we need to run for the whole process:
 1. builder.py: We could run this file to generate our json file of inverted index and some other files. These files should be generated before starting our system.
 2. main.py: If we run this file, information retrival system will start. For now, it only offer two functions: Boolean (AND, OR, NOT AND, NOT OR) and TFIDF.
 
-
-#### (1) If you just want to see the demo and the result, please download the generated data from the link:
+## Demo
+#### If you just want to see the demo and the result, please download the generated data from the link:
 ```
 https://uoe-my.sharepoint.com/:f:/r/personal/s2042303_ed_ac_uk/Documents/processed_data?csf=1&web=1&e=1wGSxy
 ```
 #### Download the folder to the current directory, then You just need to run the main.py and no need to run builder.py. 
 
-#### (2) If you want to change the dataset, remember to change the value of the variable 'filepath' which is at the bottom of builder.py, then run builder.py firstly to generate updated files.
+## Whole process
+#### If you want to change the dataset, remember to change the value of the variable 'filepath' which is at the bottom of builder.py, then run builder.py firstly to generate updated files.
 
-#### For the generated data files, the test dataset is a 300-line jsonlines file. The link of this dataset folder is as below:
+Please remember: when you run builder.py, please make sure you create a folder named "processed_data" manually, or the process will be failed. This is because this folder is to store generated json file, and builder.py cannot create these json files without this folder.
+
+#### If you want to use the original dataset or see the structure of it, the test dataset is a 300-line jsonlines file. The link of this dataset folder is as below:
 ```
 https://uoe-my.sharepoint.com/:f:/r/personal/s2042303_ed_ac_uk/Documents/datasets?csf=1&web=1&e=WeLiHG
 ```
