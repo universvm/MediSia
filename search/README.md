@@ -8,7 +8,7 @@ If you just want to see the demo and the result, please download the generated d
 ```
 https://uoe-my.sharepoint.com/:f:/r/personal/s2042303_ed_ac_uk/Documents/processed_data?csf=1&web=1&e=1wGSxy
 ```
-Download the folder to the current directory, then You just need to run the main.py and no need to run builder.py. 
+Download the whole folder named "processed_data" to the current directory, then You just need to run the main.py and no need to run builder.py. 
 
 ## Whole process
 If you want to change the dataset, remember to change the value of the variable 'filepath' which is at the bottom of builder.py, then run builder.py firstly to generate updated files.
