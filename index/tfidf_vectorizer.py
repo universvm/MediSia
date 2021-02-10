@@ -26,8 +26,7 @@ from gensim.parsing.preprocessing import preprocess_string
 
 
 def clean_and_tokenize_text(input_corpus: str) -> t.List[str]:
-    preprocessed_corpus = preprocess_string(input_corpus)
-    return utils.tokenize(preprocessed_corpus, deacc=True, lower=True)
+    return preprocess_string(input_corpus)
 
 
 class BiopapersCorpus:
@@ -37,8 +36,16 @@ class BiopapersCorpus:
 
     def __iter__(self):
         for json_line in jsonlines.open(self.index_path):
-            # Add abstract and title together:
-            title_abstract_str = json_line["title"] + " " + json_line["abstract"]
+            # Initialize empty abstract and title:
+            abstract = ""
+            title = ""
+            # Check if title and abstracts are available:
+            if json_line["title"]:
+                title = json_line["title"]
+            if json_line["abstract"]:
+                abstract = json_line["abstract"]
+            # Add abstract and title together
+            title_abstract_str = title + " " + abstract
             tokens_list = clean_and_tokenize_text(title_abstract_str)
             yield self.dictionary.doc2bow(tokens_list)
 
@@ -53,14 +60,23 @@ class BiopapersBOW:
 
     def __iter__(self):
         for json_line in jsonlines.open(self.index_path):
-            # Add abstract and title together:
-            title_abstract_str = json_line["title"] + " " + json_line["abstract"]
+            # Initialize empty abstract and title:
+            abstract = ""
+            title = ""
+            # Check if title and abstracts are available:
+            if json_line["title"]:
+                title = json_line["title"]
+            if json_line["abstract"]:
+                abstract = json_line["abstract"]
+            # Add abstract and title together
+            title_abstract_str = title + " " + abstract
+            # Clean text:
             tokens_list = clean_and_tokenize_text(title_abstract_str)
             # tokens_list = simple_preprocess(title_abstract_str, deacc=True)
             # tokens_list = title_abstract_str.lower().split(" ")
             # Create a dictionary
-            # yield Dictionary([tokens_list])
-            yield Dictionary(tokens_list)
+            yield Dictionary([tokens_list], )
+            # yield Dictionary(tokens_list)
 
 
 def create_bow_from_biopapers(
@@ -69,9 +85,8 @@ def create_bow_from_biopapers(
     path_to_jsonl_index: Path = BIOPAPERS_JSON_PATH,
     outfile: Path = BOW_PATH,
 ) -> Dictionary:
-
     # Initialize variables:
-    biopapers_iter = BiopapersBOW(path_to_jsonl_index, create_bow_mode=True)
+    biopapers_iter = BiopapersBOW(path_to_jsonl_index)
     collection_dictionary = dict()
     # Iterate through collection and build vocabulary
     for i, paper_vocabulary in enumerate(
@@ -82,11 +97,10 @@ def create_bow_from_biopapers(
             collection_dictionary = paper_vocabulary
         else:
             collection_dictionary.merge_with(paper_vocabulary)
-        # Filter words before reiterating:
-        curr_dictionary.filter_extremes(no_below=no_below, no_above=no_above)
-    # TODO Try by just returning document
-    # Save collection to file
-    curr_dictionary.save(outfile)
+    # Filter words:
+    collection_dictionary.filter_extremes(no_below=no_below, no_above=no_above)
+    # Save collection to file:
+    collection_dictionary.save(str(outfile))
 
     return collection_dictionary
 
@@ -103,37 +117,11 @@ def create_tfidf_from_papers(
     # Train TFIDF
     tfidf_model = TfidfModel(corpus)
     # Save TFIDF model to file:
-    tfidf_model.save(outfile)
+    tfidf_model.save(str(outfile))
 
     return tfidf_model
 
 
-def vectorize_index_tfidf(
-    doc_corpus: t.List, index_name: str, out_folder: Path, max_n_words
-):
-    # Creates a hash that allows for vectorization
-    # This is really efficient as new words can be added immediately
-    # read more: https://radimrehurek.com/gensim/corpora/hashdictionary.html
-    dictionary = HashDictionary(id_range=DEFAULT_DICT_SIZE)
-    dictionary.allow_update = True  # start collecting document frequencies
-
-    return
-
-
 if __name__ == "__main__":
-
-    prova = BiopapersBOW()
-    curr_dictionary = dict()
-    for i, p in enumerate(prova):
-        print(i)
-        if i == 0:
-            curr_dictionary = p
-            curr_dictionary.filter_extremes(no_below=2, no_above=0.5)
-            print(curr_dictionary)
-        else:
-            curr_dictionary.merge_with(p)
-        if i == 5:
-            print(curr_dictionary)
-            break
-    # twenty = fetch_20newsgroups()
-    # docs = [clean_text(str(doc)) for doc in twenty.values()]
+    _ = create_bow_from_biopapers()
+    _ = create_tfidf_from_papers()
