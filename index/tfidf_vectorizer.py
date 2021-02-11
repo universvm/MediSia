@@ -72,11 +72,8 @@ class BiopapersBOW:
             title_abstract_str = title + " " + abstract
             # Clean text:
             tokens_list = clean_and_tokenize_text(title_abstract_str)
-            # tokens_list = simple_preprocess(title_abstract_str, deacc=True)
-            # tokens_list = title_abstract_str.lower().split(" ")
             # Create a dictionary
-            yield Dictionary([tokens_list], )
-            # yield Dictionary(tokens_list)
+            yield Dictionary([tokens_list])
 
 
 def create_bow_from_biopapers(
