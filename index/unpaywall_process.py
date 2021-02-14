@@ -24,6 +24,7 @@ from pdfminer.pdfparser import PDFParser
 
 from config import (
     PAPERS_JSON_FOLDER,
+    BIOJOURNALS_CATEGORIES_FILE,
     BIOPAPERS_JSON_PATH,
     BIOJOURNALS_FILE,
     BIOPAPERS_WOUT_ABSTRACT_JSON_PATH,
@@ -36,7 +37,40 @@ def clean_text(text: str) -> str:
     text = re.sub(r"[\n\r\t]", "", text)
     # Remove special characters but not space
     text = re.sub(r"[^a-zA-Z0-9]+", " ", text)
-    return text
+    return text.lower()
+
+
+def build_journal_category_dict(
+    journals_categories_path: Path = BIOJOURNALS_CATEGORIES_FILE,
+) -> dict:
+    """
+    Creates a dictionary of {journal : category} form
+
+    Parameters
+    ----------
+    journals_categories_path: Path
+        Path to journals categories
+
+    Returns
+    -------
+    journal_to_category: dict
+        Dictionary {journal : category}
+    """
+    # Initialize dict:
+    journal_to_category = {}
+    # Open file and read line by line
+    with open(journals_categories_path, "r") as f:
+        flines = f.readlines()
+        for line in flines:
+            # Extract category and journals
+            category, journals = line.split(" - ", maxsplit=1)
+            # Split journals by comma:
+            for journal in journals.split(","):
+                clean_journal = clean_text(journal)
+                # Add journal to dict
+                journal_to_category[clean_journal] = category
+
+    return journal_to_category
 
 
 class BiopapersFilter:
@@ -216,7 +250,6 @@ class AbstractDownloader:
         """
         doi = paper_dict["doi"]
         doi_url = paper_dict["doi_url"]
-        print(doi)
         # Attempt to use Bioarxiv API
         abstract_status, abstract = self._get_abstract_w_bioarxiv(doi)
         if abstract_status and abstract:
@@ -238,10 +271,9 @@ class AbstractDownloader:
                     # Attempt to use Selenium
                     if not self.fast_search:
                         print("No methods have extracted the abstract, trying Selenium")
-                        abstract_status, abstract = self._get_abstract_w_selenium(doi_url)
-                        print(doi_url)
-                        print(abstract_status)
-                        print(abstract)
+                        abstract_status, abstract = self._get_abstract_w_selenium(
+                            doi_url
+                        )
                         if abstract_status and abstract:
                             paper_dict["abstract"] = abstract[:650]
                             paper_dict["abstract_source"] = "selenium"
@@ -385,10 +417,7 @@ class AbstractDownloader:
                 vdisplay.stop()
             soup = BeautifulSoup(doi_html_page, "html.parser")
             text = soup.get_text().lower()
-            # Remove string control characters:
-            text = re.sub(r"[\n\r\t]", "", text)
-            # Remove special characters but not space
-            text = re.sub(r"[^a-zA-Z0-9]+", " ", text)
+            text = clean_text(text)
             # Extract all text after "Abstract"
             abstract = text.split("abstract", 1)[-1]
             if len(abstract) > 0:
@@ -408,6 +437,11 @@ class AbstractDownloader:
                 return found_abstract, None
 
 
+class CategoryAnnotator:
+
+
 if __name__ == "__main__":
-    BiopapersFilter()
+    j = build_journal_category_dict()
+    print(j)
+    # BiopapersFilter()
     # AbstractDownloader()
