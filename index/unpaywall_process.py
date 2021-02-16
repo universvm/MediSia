@@ -21,8 +21,11 @@ from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
+from nltk import edit_distance
+from index.tfidf_vectorizer import clean_and_tokenize_text
 
 from config import (
+    PAPERS_FOLDER,
     PAPERS_JSON_FOLDER,
     BIOJOURNALS_CATEGORIES_FILE,
     BIOPAPERS_JSON_PATH,
@@ -42,7 +45,7 @@ def clean_text(text: str) -> str:
 
 def build_journal_category_dict(
     journals_categories_path: Path = BIOJOURNALS_CATEGORIES_FILE,
-) -> dict:
+) -> (dict, list):
     """
     Creates a dictionary of {journal : category} form
 
@@ -55,22 +58,28 @@ def build_journal_category_dict(
     -------
     journal_to_category: dict
         Dictionary {journal : category}
+    categories_list: list
+        List of categories in the journal_to_category dictionary.
     """
     # Initialize dict:
     journal_to_category = {}
+    categories_list = []
     # Open file and read line by line
     with open(journals_categories_path, "r") as f:
         flines = f.readlines()
         for line in flines:
             # Extract category and journals
             category, journals = line.split(" - ", maxsplit=1)
+            # Save category to list:
+            categories_list.append(category)
             # Split journals by comma:
             for journal in journals.split(","):
-                clean_journal = clean_text(journal)
-                # Add journal to dict
+                # Clean text:
+                clean_journal = "".join(clean_and_tokenize_text(journal))
+                # Add journal to dict:
                 journal_to_category[clean_journal] = category
 
-    return journal_to_category
+    return journal_to_category, categories_list
 
 
 class BiopapersFilter:
@@ -438,10 +447,151 @@ class AbstractDownloader:
 
 
 class CategoryAnnotator:
+    """
+    Annotates category for papers in JSONL file:
+    """
+
+    def __init__(
+        self,
+        biopapers_folder: Path = PAPERS_FOLDER,
+        biopapers_with_abstract: Path = BIOPAPERS_W_ABSTRACT_JSON_PATH,
+        biopapers_without_abstract: Path = BIOPAPERS_WOUT_ABSTRACT_JSON_PATH,
+    ):
+        """
+
+        Parameters
+        ----------
+        biopapers_folder: Path
+        biopapers_with_abstract: Path
+        biopapers_without_abstract: Path
+        """
+        self.biopapers_folder = biopapers_folder
+        self.biopapers_with_abstract = biopapers_with_abstract
+        self.biopapers_without_abstract = biopapers_without_abstract
+        # Get journals categories:
+        self.journal_to_category, self.categories_list = build_journal_category_dict()
+        # Check all the category index in the folder
+        self.category_outpaths_list = list(self.biopapers_folder.rglob("index_*"))
+
+        self.create_category_index()
+        # save dict to file TODO FIX
+
+    def create_category_index(self):
+        # Dictionary storing all categories of papers created
+        category_to_file_dict = {}
+        # Count papers
+        papers_count = 0
+        if len(self.category_outpaths_list) > 0:
+            # Calculate last papers searched overall so they can be skipped
+            if len(self.category_outpaths_list) > 0:
+                # For each path available:
+                for cat_path in self.category_outpaths_list:
+                    # Extract category name:
+                    curr_category = str(cat_path.stem).split("index_")[-1]
+                    with jsonlines.open(cat_path, mode="r") as reader:
+                        # Count the papers in category:
+                        papers_count += len(list(reader))
+                    # open file in append mode and add to dictionary:
+                    with jsonlines.open(cat_path, mode="a") as writer:
+                        # Save open file to dict:
+                        category_to_file_dict[curr_category] = writer
+
+        # Count how many papers with abstract there are:
+        abstract_checkpoint = 0
+        with jsonlines.open(self.biopapers_with_abstract, mode="r") as reader:
+            abstract_checkpoint += len(list(reader))
+        # If papers processed is higher than abstract papers, move to papers without abstract
+        if papers_count >= abstract_checkpoint:
+            print(
+                f"Finished processing papers with abstract, moving to papers without."
+            )
+            papers_count -= abstract_checkpoint
+            category_to_file_dict = self.categorise_and_extract_papers(
+                self.biopapers_without_abstract, papers_count, category_to_file_dict
+            )
+            # Process papers without abstract:
+        else:
+            # Process papers with abstract:
+            category_to_file_dict = self.categorise_and_extract_papers(
+                self.biopapers_with_abstract, abstract_checkpoint, category_to_file_dict
+            )
+            # Process papers without abstract
+            category_to_file_dict = self.categorise_and_extract_papers(
+                self.biopapers_without_abstract, 0, category_to_file_dict
+            )
+
+        # Close files:
+        for open_file in category_to_file_dict.values():
+            open_file.close()
+
+    def categorise_and_extract_papers(
+        self, paper_to_open, checkpoint, category_to_file_dict
+    ) -> dict:
+        with jsonlines.open(paper_to_open, mode="r") as reader:
+            # Create Muliprocessing Pool:
+            pool = mp.Pool()
+            # Open reader and start from checkpoint rather than from 0
+            checkpoint_reader = itertools.islice(reader, checkpoint, None)
+            print(checkpoint_reader)
+            # For each paper:
+            for paper_w_category_dict in pool.imap(
+                self.get_category, checkpoint_reader
+            ):
+                curr_category = paper_w_category_dict["category"]
+                # If category file is present and opened:
+                if curr_category in category_to_file_dict.keys():
+                    category_to_file_dict[curr_category].write(paper_w_category_dict)
+                else:
+                    # Create jsonl path
+                    category_path = (
+                        self.biopapers_folder / f"index_{curr_category}.jsonl"
+                    )
+                    # Open file and add it to the dictionariy
+                    writer = jsonlines.open(category_path, mode="a")
+                    category_to_file_dict[curr_category] = writer
+                    # Write paper:
+                    writer.write(paper_w_category_dict)
+
+        return category_to_file_dict
+
+    def get_category(self, paper_dict: dict) -> dict:
+        journal = paper_dict["journal_name"]
+        # Clean text:
+        clean_journal = "".join(clean_and_tokenize_text(journal))
+        # If journal is present in categories:
+        if clean_journal in self.journal_to_category.keys():
+            paper_dict["category"] = self.journal_to_category[clean_journal]
+        else:
+            print(
+                f"{clean_journal} not found in Journals. Using NLTK to find closest match."
+            )
+            unique_journals = self.journal_to_category.keys()
+            # Create a dictionary of distances:
+            journal_distance_dict = {}
+            # For each journal:
+            for curr_journal in unique_journals:
+                # Measure distance
+                journal_distance_dict[curr_journal] = edit_distance(
+                    clean_journal, curr_journal
+                )
+            # Sort by smallest to largest by distance value
+            journal_distances_list = sorted(
+                journal_distance_dict.items(), key=lambda x: x[1]
+            )
+            # Select closes journals:
+            closest_journal = journal_distances_list[0][0]
+            closest_category = self.journal_to_category[closest_journal]
+            print(
+                f"Closest journal for entry {clean_journal} was {closest_journal} of category {closest_category}."
+            )
+            # Add newly found journal to dictionaries:
+            self.journal_to_category[clean_journal] = closest_category
+            paper_dict["category"] = self.journal_to_category[clean_journal]
+        return paper_dict
 
 
 if __name__ == "__main__":
-    j = build_journal_category_dict()
-    print(j)
+    # j = build_journal_category_dict()
+    # print(j)
     # BiopapersFilter()
-    # AbstractDownloader()
+    CategoryAnnotator()
