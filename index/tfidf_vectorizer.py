@@ -1,4 +1,5 @@
-import gzip
+import bz2
+import os
 import jsonlines
 import pickle
 import typing as t
@@ -10,7 +11,7 @@ from gensim.models import TfidfModel
 from gensim.parsing.preprocessing import preprocess_string
 from tqdm import tqdm
 
-from config import BIOPAPERS_JSON_PATH, BOW_PATH, TFIDF_VECTORIZER
+from config import BIOPAPERS_JSON_PATH, BOW_PATH, TFIDF_VECTORIZER, INDECES_FOLDER
 
 
 def clean_and_tokenize_text(input_corpus: str) -> t.List[str]:
@@ -33,7 +34,9 @@ class BiopapersCorpus:
         self.count_doc_id = 0
 
     def __iter__(self):
-        for json_line in tqdm(jsonlines.open(self.index_path), "Iterating through corpora"):
+        for json_line in tqdm(
+            jsonlines.open(self.index_path), "Iterating through corpora"
+        ):
             # Initialize empty abstract and title:
             abstract = ""
             title = ""
@@ -57,17 +60,19 @@ class BiopapersCorpus:
                     authors_dict = json_line["z_authors"]
                     year = json_line["year"]
                     # Add metadata to dictionary
-                    metadata_dict = {self.count_doc_id : {
-                        "doi": doi,
-                        "title": title,
-                        "url": url,
-                        "journal": journal,
-                        "authors": authors_dict,
-                        "year": year,
-                    }}
+                    metadata_dict = {
+                        self.count_doc_id: {
+                            "doi": doi,
+                            "title": title,
+                            "url": url,
+                            "journal": journal,
+                            "authors": authors_dict,
+                            "year": year,
+                        }
+                    }
                     # Create key in gz pickle file:
-                    with gzip.open(self.metadata_index_outpath, 'wb') as outfile:
-                        pickle.dump(metadata_dict, outfile)
+                    with jsonlines.open(self.metadata_index_outpath, "a") as outfile:
+                        outfile.write(metadata_dict)
                     # Increasing count:
                     self.count_doc_id += 1
                 # Convert BOW corpus to TFIDF:
@@ -210,11 +215,17 @@ def convert_corpus_to_sparse_tfidf(
         Path to TFIDF model for vectorization of BOW corpus
     """
     # Load dictionary
-    bow_dictionary = Dictionary.load(str(path_to_bow))
+    if path_to_bow.exists():
+        bow_dictionary = Dictionary.load(str(path_to_bow))
+    else:
+        bow_dictionary = create_bow_from_biopapers()
     # Load tfidf model:
-    tfidf_model = TfidfModel.load(str(tfidf_vectorizer))
-    # Add pickle suffix
-    metadata_index_outpath = metadata_index_outpath.with_suffix('.pkl.gz')
+    if tfidf_vectorizer.exists():
+        tfidf_model = TfidfModel.load(str(tfidf_vectorizer))
+    else:
+        tfidf_model = create_tfidf_from_papers()
+    # Add pickle suffix:
+    metadata_index_outpath = metadata_index_outpath.with_suffix(".jsonl")
     # Load corpus generator:
     tfidf_corpus = BiopapersCorpus(
         bow_dictionary=bow_dictionary,
@@ -224,9 +235,101 @@ def convert_corpus_to_sparse_tfidf(
     )
     # Save corpus and index to file:
     MmCorpus.serialize(str(vectorized_corpus_outpath), tfidf_corpus)
+    # Convert Jsonlines to pickle bz2
+    convert_jsonl_to_pickle_bz(metadata_index_outpath)
+
+
+def convert_jsonl_to_pickle_bz(jsonl_path: Path, delete_jsonl: bool = True):
+    """
+    Converts jsonl metadata to pickle bz and optionally removes the original file.
+
+    Parameters
+    ----------
+    jsonl_path: Path
+        Path to Jsonlines metadata
+    delete_jsonl: Bool
+        Whether to delete the jsonlines file after the conversion. Default = True
+    """
+    pkl_bz_outfile = jsonl_path.with_suffix(".bz2")
+    metadata_dict = {}
+    # Open jsonlines and update dictionary:
+    with jsonlines.open(jsonl_path) as reader:
+        for i, metadata_obj in enumerate(reader):
+            if i == 0:
+                metadata_dict = dict(metadata_obj)
+            else:
+                metadata_dict = {**metadata_dict, **dict(metadata_obj)}
+    # Write pickle to compressed BZ2:
+    with bz2.BZ2File(pkl_bz_outfile, "wb") as writer:
+        pickle.dump(metadata_dict, writer)
+    # Remove Jsonlines file
+    if delete_jsonl:
+        try:
+            os.remove(jsonl_path)
+        except:
+            print("Failed to delete Jsonlines file.")
+
+
+def convert_indeces_to_tfidf(indeces_folder: Path = INDECES_FOLDER):
+    # Obtain list of all indeces:
+    index_list = list(indeces_folder.rglob("index_*"))
+    # For index path
+    for index_path in index_list:
+        category = str(index_path.stem).split("index_")[-1]
+        metadata_outpath = indeces_folder / f"{category}_metadata"
+        corpus_outpath = indeces_folder / f"{category}_corpus.mm"
+
+        convert_corpus_to_sparse_tfidf(
+            metadata_index_outpath=metadata_outpath,
+            vectorized_corpus_outpath=corpus_outpath,
+            path_to_jsonl_index=index_path,
+        )
+
+
+def convert_str_to_tfidf(
+    input_str: str,
+    path_to_bow: Path = BOW_PATH,
+    tfidf_vectorizer: Path = TFIDF_VECTORIZER,
+) -> list:
+    """
+    Converts a string to bow and then to tfidf
+
+    Parameters
+    ----------
+    input_str: str
+        String to be converted. eg. from query
+    path_to_bow: Path
+        Path to BOW dictionary
+    tfidf_vectorizer:
+        Path to TFIDF model for vectorization of BOW corpus
+
+    Returns
+    -------
+    tfidf_query: list
+        List of vectorized tokens and relative tfidf value.
+    bow_len: int
+        Integer representing the length of the bow dictionary.
+
+    """
+    # Load dictionary
+    if path_to_bow.exists():
+        bow_dictionary = Dictionary.load(str(path_to_bow))
+    else:
+        bow_dictionary = create_bow_from_biopapers()
+    # Load tfidf model:
+    if tfidf_vectorizer.exists():
+        tfidf_model = TfidfModel.load(str(tfidf_vectorizer))
+    else:
+        tfidf_model = create_tfidf_from_papers()
+    # Tokenize query:
+    query_tokens = clean_and_tokenize_text(input_str)
+    # Convert query to bow:
+    query_bow = bow_dictionary.doc2bow(query_tokens)
+    # Convert bow query to Tfidf:
+    tfidf_query = tfidf_model[query_bow]
+
+    return tfidf_query, len(bow_dictionary)
 
 
 if __name__ == "__main__":
-    _ = create_bow_from_biopapers()
-    _ = create_tfidf_from_papers()
-    convert_corpus_to_sparse_tfidf(Path('botany_metadata'), Path("botany_corpus.mm"))
+    convert_indeces_to_tfidf()

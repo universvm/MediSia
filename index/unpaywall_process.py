@@ -33,6 +33,7 @@ from config import (
     BIOJOURNALS_FILE,
     BIOPAPERS_WOUT_ABSTRACT_JSON_PATH,
     BIOPAPERS_W_ABSTRACT_JSON_PATH,
+    INDECES_FOLDER,
 )
 
 
@@ -454,7 +455,7 @@ class CategoryAnnotator:
 
     def __init__(
         self,
-        biopapers_folder: Path = PAPERS_FOLDER,
+        indeces_folder: Path = INDECES_FOLDER,
         biopapers_with_abstract: Path = BIOPAPERS_W_ABSTRACT_JSON_PATH,
         biopapers_without_abstract: Path = BIOPAPERS_WOUT_ABSTRACT_JSON_PATH,
         journals_categories_path: Path = BIOJOURNALS_CATEGORIES_FILE,
@@ -463,7 +464,7 @@ class CategoryAnnotator:
 
         Parameters
         ----------
-        biopapers_folder: Path
+        indeces_folder: Path
             Path to biopapers
         biopapers_with_abstract: Path
             Path to biopapers with abstract
@@ -472,7 +473,7 @@ class CategoryAnnotator:
         journals_categories_path: Path
             Path to Journals categories. Either .txt format or bz2
         """
-        self.biopapers_folder = biopapers_folder
+        self.indeces_folder = indeces_folder
         self.biopapers_with_abstract = biopapers_with_abstract
         self.biopapers_without_abstract = biopapers_without_abstract
         self.journals_categories_path = journals_categories_path
@@ -495,7 +496,7 @@ class CategoryAnnotator:
             )
 
         # Check all the category index in the folder
-        self.category_outpaths_list = list(self.biopapers_folder.rglob("index_*"))
+        self.category_outpaths_list = list(self.indeces_folder.rglob("index_*"))
         # Create category index
         self.create_category_index()
         # Save journals with nltk to file (saves time)
@@ -580,7 +581,7 @@ class CategoryAnnotator:
             pool = mp.Pool()
             # Open reader and start from checkpoint rather than from 0
             checkpoint_reader = itertools.islice(reader, checkpoint, None)
-            print(checkpoint_reader)
+            print(checkpoint)
             # For each paper:
             for paper_w_category_dict in pool.imap(
                 self.get_category, checkpoint_reader
@@ -592,7 +593,7 @@ class CategoryAnnotator:
                 else:
                     # Create jsonl path
                     category_path = (
-                        self.biopapers_folder / f"index_{curr_category}.jsonl"
+                            self.indeces_folder / f"index_{curr_category}.jsonl"
                     )
                     # Open file and add it to the dictionariy
                     writer = jsonlines.open(category_path, mode="a")
