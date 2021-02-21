@@ -32,6 +32,5 @@ def search_query_in_category(query: str, category: str, indeces_folder: Path = I
     print(metadata_dict[str(sorted_docid_results[2])])
 
 
-
 if __name__ == '__main__':
     search_query_in_category("nucleotide chromatin associated rna synthesis", "biochemistry")

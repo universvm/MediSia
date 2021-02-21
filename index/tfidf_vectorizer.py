@@ -5,17 +5,55 @@ import pickle
 import typing as t
 from pathlib import Path
 
+from gensim import utils
 from gensim.corpora import Dictionary
 from gensim.corpora.mmcorpus import MmCorpus
 from gensim.models import TfidfModel
-from gensim.parsing.preprocessing import preprocess_string
+from gensim.parsing.preprocessing import PorterStemmer
 from tqdm import tqdm
 
-from config import BIOPAPERS_JSON_PATH, BOW_PATH, TFIDF_VECTORIZER, INDECES_FOLDER
+from config import BIOPAPERS_JSON_PATH, BOW_PATH, TFIDF_VECTORIZER, INDECES_FOLDER, DEFAULT_STOPWORDS
+from config import spaces, num_alpha, alpha_num, non_letters, numbers, html_tags, punctuation
+p = PorterStemmer()
 
 
-def clean_and_tokenize_text(input_corpus: str) -> t.List[str]:
-    return preprocess_string(input_corpus)
+def clean_and_tokenize_text(input_corpus: str, min_len: int = 3) -> t.List[str]:
+    """
+    Inspiration from gensim preprocess_text with the addition of medical stop words
+
+    Parameters
+    ----------
+    input_corpus: str
+        Input string to be tokenized
+
+    Returns
+    -------
+    s_tokens: list
+        List of stemmed tokens
+    """
+    s = input_corpus.lower()
+    s = utils.to_unicode(s)
+    # Remove HTML Tags
+    s = html_tags.sub("", s)
+    # Remove punctuation:
+    s = punctuation.sub("", s)
+    # Remove non-letters:
+    s = non_letters.sub(" ", s)
+    # Remove digits in letters:
+    s = alpha_num.sub(" ", s)
+    s = num_alpha.sub(" ", s)
+    # Remove white space:
+    s = spaces.sub(" ", s)
+    # Remove numbers:
+    s = numbers.sub("", s)
+    # Remove stopwords and small words:
+    s_tokens = []
+    for curr_word in s.split(" "):
+        if curr_word not in DEFAULT_STOPWORDS:
+            if len(curr_word) >= min_len:
+                s_tokens.append(p.stem(curr_word))
+
+    return s_tokens
 
 
 class BiopapersCorpus:
