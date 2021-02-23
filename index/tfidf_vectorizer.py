@@ -147,10 +147,11 @@ class BiopapersBOW:
 
 
 def create_bow_from_biopapers(
-    no_below: int = 2,
+    no_below: int = 5,
     no_above: float = 0.5,
     path_to_jsonl_index: Path = BIOPAPERS_JSON_PATH,
     outfile: Path = BOW_PATH,
+    prune_at_idx: int = 100,
 ) -> Dictionary:
     """
     Create bag of words dictionary from jsonl biopapers
@@ -183,7 +184,10 @@ def create_bow_from_biopapers(
             collection_dictionary = paper_vocabulary
         else:
             collection_dictionary.merge_with(paper_vocabulary)
-    # Filter words:
+        if i % prune_at_idx:
+            # Filter words:
+            collection_dictionary.filter_extremes(no_below=no_below, no_above=no_above)
+    # Final Filter words:
     collection_dictionary.filter_extremes(no_below=no_below, no_above=no_above)
     # Save collection to file:
     collection_dictionary.save(str(outfile))
@@ -370,4 +374,5 @@ def convert_str_to_tfidf(
 
 
 if __name__ == "__main__":
-    convert_indeces_to_tfidf()
+    create_bow_from_biopapers()
+    # convert_indeces_to_tfidf()
