@@ -147,11 +147,11 @@ class BiopapersBOW:
 
 
 def create_bow_from_biopapers(
-    no_below: int = 5,
+    no_below: int = 3,
     no_above: float = 0.5,
     path_to_jsonl_index: Path = BIOPAPERS_JSON_PATH,
     outfile: Path = BOW_PATH,
-    prune_at_idx: int = 100,
+    prune_at_idx: int = 1000,
 ) -> Dictionary:
     """
     Create bag of words dictionary from jsonl biopapers
@@ -166,6 +166,9 @@ def create_bow_from_biopapers(
         Path to jsonlines papers
     outfile: Path
         Path to bow file
+    prune_at_idx: int
+        Index multiple at which to prune the dictionary. Eg. if prune_at_idx the
+        index will be pruned at 1000, 2000, 3000 and so on.
 
     Returns
     -------
@@ -332,7 +335,7 @@ def convert_str_to_tfidf(
     input_str: str,
     path_to_bow: Path = BOW_PATH,
     tfidf_vectorizer: Path = TFIDF_VECTORIZER,
-) -> list:
+) -> (list, int):
     """
     Converts a string to bow and then to tfidf
 
