@@ -377,5 +377,4 @@ def convert_str_to_tfidf(
 
 
 if __name__ == "__main__":
-    create_bow_from_biopapers()
-    # convert_indeces_to_tfidf()
+    convert_indeces_to_tfidf()
