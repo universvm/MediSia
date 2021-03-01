@@ -1,12 +1,13 @@
 import csv
+from time import time
 from pathlib import Path
-from numpy import inf
-import numpy as np
 
 from gensim.corpora import MmCorpus
 from gensim.matutils import sparse2full
 from joblib import dump
-from sklearn.naive_bayes import GaussianNB
+import numpy as np
+from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
+from sklearn.linear_model import Perceptron, PassiveAggressiveClassifier, SGDClassifier
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
@@ -26,6 +27,7 @@ class ModelTrainer:
     """
     Trains a Scikit Learn model using partial fit and random sampling.
     """
+
     def __init__(
         self,
         epochs: int,
@@ -76,7 +78,7 @@ class ModelTrainer:
         # Begin training:
         for i in tqdm(range(self.epochs)):
             # Calculate documents per batch
-            n_docs_per_batch = int(smallest_doc_length * 0.01)
+            n_docs_per_batch = int(smallest_doc_length * 0.25)
             # Partial fit:
             self.train_model(
                 i,
@@ -126,7 +128,7 @@ class ModelTrainer:
         val_category_to_docIDs = {k: [] for k in self.categories}
         test_category_to_docIDs = {k: [] for k in self.categories}
         # Smallest length of docids (used for undersampling):
-        smallest_doc_length = inf
+        smallest_doc_length = np.inf
         total_n_docs = 0
         # Loop and obtain ids:
         for corpus_file, category in zip(mm_corpora_files, self.categories):
@@ -169,6 +171,22 @@ class ModelTrainer:
         val_category_to_docIDs: dict,
         n_docs_per_batch: int,
     ):
+        """
+        Trains model with partial fit on a batch.
+
+        Parameters
+        ----------
+        iteration: int
+            Iteration number.
+        categories_to_corpus: dict
+            Category to category market matrix corpus.
+        train_category_to_docIDs: dict
+            Category to DocIDs for train data.
+        val_category_to_docIDs: dict
+            Category to DocIDs for val data.
+        n_docs_per_batch: int
+            Number of docs to be extract for the batch.
+        """
         # Load train data:
         X_train, y_train = self.load_batch_data(
             categories_to_corpus, train_category_to_docIDs, n_docs_per_batch
@@ -215,7 +233,11 @@ class ModelTrainer:
         )
         # Predict data:
         y_predicted = self.skmodel.predict(X_test)
+        start = time()
         y_score = self.skmodel.predict_proba(X_test)
+        end = time()
+        # Calculate time elapsed
+        total_time = end - start
         # Calculate metrics:
         metrics = {
             "accuracy": 0,
@@ -224,6 +246,7 @@ class ModelTrainer:
             "precision": 0,
             "recall": 0,
             "auc": 0,
+            "time": total_time,
         }
         test_accuracy = accuracy_score(y_true=y_test, y_pred=y_predicted)
         test_precision = precision_score(
@@ -330,18 +353,15 @@ class ModelTrainer:
 
 
 if __name__ == "__main__":
-    model = GaussianNB()
-    print(vars(GaussianNB()))
-    trainer = ModelTrainer(
-        epochs=1, val_split=0.2, bow_length=100000, skmodel=model
-    )
-    trainer.train()
+    models = [
+        GaussianNB(),
+        MultinomialNB(),
+        BernoulliNB(),
+        SGDClassifier(loss="log"),
+    ]
 
-# from gensim.corpora import MmCorpus
-# from gensim.test.utils import datapath
-#
-# path_to_index = INDECES_FOLDER / "biology_corpus.mm"
-# corpus = MmCorpus(datapath(path_to_index))
-# print(corpus[3])
-# print(len(corpus))
-# print(vars(corpus))
+    for model in models:
+        trainer = ModelTrainer(
+            epochs=15, val_split=0.2, bow_length=100000, skmodel=model
+        )
+        trainer.train()

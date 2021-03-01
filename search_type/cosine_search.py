@@ -6,9 +6,23 @@ from config import INDECES_FOLDER
 import pickle
 from index.tfidf_vectorizer import convert_str_to_tfidf
 from pathlib import Path
+from time import time
 
 
 def search_query_in_category(query: str, category: str, indeces_folder: Path = INDECES_FOLDER):
+    """
+    Searches query in a specific category of index.
+
+    Parameters
+    ----------
+    query: str
+        Query to search
+    category: str
+        Category to search in
+    indeces_folder: Path
+        Path to all indeces
+
+    """
     tfidf_query, bow_len = convert_str_to_tfidf(query)
     # Create temporary file for similarity index
     index_tmpfile = get_tmpfile("index")
@@ -33,4 +47,7 @@ def search_query_in_category(query: str, category: str, indeces_folder: Path = I
 
 
 if __name__ == '__main__':
-    search_query_in_category("nucleotide chromatin associated rna synthesis", "biochemistry")
+    start = time()
+    search_query_in_category("coronavirus", "virology")
+    end = time()
+    print(end-start)
