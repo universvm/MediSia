@@ -8,6 +8,7 @@ import urllib.request, json
 from io import StringIO, BytesIO
 from pathlib import Path
 
+import shutil
 import bz2
 import jsonlines
 import metapub
@@ -685,5 +686,18 @@ class CategoryAnnotator:
         return category_to_journal_dict
 
 
+def merge_abstract_no_abstract_jsonl(
+        paper_w_abstract : Path = BIOPAPERS_W_ABSTRACT_JSON_PATH,
+        paper_wout_abstract : Path = BIOPAPERS_WOUT_ABSTRACT_JSON_PATH,
+        output_file: Path = BIOPAPERS_JSON_PATH,
+    ):
+    with open(output_file, 'wb') as wfd:
+        for f in [paper_w_abstract, paper_wout_abstract]:
+            with open(f, 'rb') as fd:
+                shutil.copyfileobj(fd, wfd)
+                wfd.write(b"\n")
+
+
 if __name__ == "__main__":
-    CategoryAnnotator()
+    # CategoryAnnotator()
+    merge_abstract_no_abstract_jsonl()

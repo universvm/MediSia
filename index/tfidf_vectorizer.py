@@ -12,8 +12,25 @@ from gensim.models import TfidfModel
 from gensim.parsing.preprocessing import PorterStemmer
 from tqdm import tqdm
 
-from config import BIOPAPERS_JSON_PATH, BOW_PATH, TFIDF_VECTORIZER, INDECES_FOLDER, DEFAULT_STOPWORDS
-from config import spaces, num_alpha, alpha_num, non_letters, numbers, html_tags, punctuation
+from config import (
+    BIOPAPERS_JSON_PATH,
+    BOW_PATH,
+    TFIDF_VECTORIZER,
+    INDECES_FOLDER,
+    DEFAULT_STOPWORDS,
+    BIOPAPERS_WOUT_ABSTRACT_JSON_PATH,
+    BIOPAPERS_W_ABSTRACT_JSON_PATH,
+)
+from config import (
+    spaces,
+    num_alpha,
+    alpha_num,
+    non_letters,
+    numbers,
+    html_tags,
+    punctuation,
+)
+
 p = PorterStemmer()
 
 
@@ -151,7 +168,7 @@ def create_bow_from_biopapers(
     no_above: float = 0.5,
     path_to_jsonl_index: Path = BIOPAPERS_JSON_PATH,
     outfile: Path = BOW_PATH,
-    prune_at_idx: int = 1000,
+    prune_at_idx: int = 10000,
 ) -> Dictionary:
     """
     Create bag of words dictionary from jsonl biopapers
@@ -187,7 +204,7 @@ def create_bow_from_biopapers(
             collection_dictionary = paper_vocabulary
         else:
             collection_dictionary.merge_with(paper_vocabulary)
-        if i % prune_at_idx:
+        if i % prune_at_idx == 0:
             # Filter words:
             collection_dictionary.filter_extremes(no_below=no_below, no_above=no_above)
     # Final Filter words:
@@ -329,7 +346,6 @@ def convert_indeces_to_tfidf(indeces_folder: Path = INDECES_FOLDER):
             vectorized_corpus_outpath=corpus_outpath,
             path_to_jsonl_index=index_path,
         )
-
 
 def convert_str_to_tfidf(
     input_str: str,
