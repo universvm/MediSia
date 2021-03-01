@@ -687,14 +687,31 @@ class CategoryAnnotator:
 
 
 def merge_abstract_no_abstract_jsonl(
-        paper_w_abstract : Path = BIOPAPERS_W_ABSTRACT_JSON_PATH,
-        paper_wout_abstract : Path = BIOPAPERS_WOUT_ABSTRACT_JSON_PATH,
+        paper_w_abstract: Path = BIOPAPERS_W_ABSTRACT_JSON_PATH,
+        paper_wout_abstract: Path = BIOPAPERS_WOUT_ABSTRACT_JSON_PATH,
         output_file: Path = BIOPAPERS_JSON_PATH,
     ):
+    """
+    Merges papers with and without abstract into one file.
+
+    Parameters
+    ----------
+    paper_w_abstract: Path
+        Papers with abstract path
+    paper_wout_abstract: Path
+        Papers with abstract path
+    output_file: Path
+        Output file path
+
+    """
+    # Open outfile
     with open(output_file, 'wb') as wfd:
+        # For both papers:
         for f in [paper_w_abstract, paper_wout_abstract]:
             with open(f, 'rb') as fd:
+                # Merge files
                 shutil.copyfileobj(fd, wfd)
+                # add new line at the end of the file
                 wfd.write(b"\n")
 
 
