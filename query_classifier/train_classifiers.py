@@ -7,7 +7,7 @@ from gensim.matutils import sparse2full
 from joblib import dump
 import numpy as np
 from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
-from sklearn.linear_model import Perceptron, PassiveAggressiveClassifier, SGDClassifier
+from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
