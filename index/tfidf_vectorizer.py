@@ -326,7 +326,7 @@ def convert_jsonl_to_pickle_bz(jsonl_path: Path, delete_jsonl: bool = True):
     # TODO this stalls for large files above 4GB
     # Write pickle to compressed BZ2:
     with bz2.BZ2File(pkl_bz_outfile, "wb") as writer:
-        pickle.dump(metadata_dict, writer)
+        writer.write(metadata_dict)
     # Remove Jsonlines file
     if delete_jsonl:
         try:
