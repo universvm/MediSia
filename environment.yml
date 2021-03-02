@@ -3,29 +3,139 @@ channels:
   - defaults
   - conda-forge
 dependencies:
+  - aiohttp=3.7.4=py38h9ed2024_1
+  - async-timeout=3.0.1=py38hecd8cb5_0
+  - attrs=20.3.0=pyhd3eb1b0_0
   - blas=1.0=mkl
-  - ca-certificates=2020.12.8=hecd8cb5_0
+  - boto=2.49.0=py38_0
+  - boto3=1.17.12=pyhd3eb1b0_0
+  - botocore=1.20.16=pyhd3eb1b0_1
+  - brotlipy=0.7.0=py38h9ed2024_1003
+  - ca-certificates=2021.1.19=hecd8cb5_0
+  - cachetools=4.2.1=pyhd3eb1b0_0
   - certifi=2020.12.5=py38hecd8cb5_0
+  - cffi=1.14.5=py38h2125817_0
+  - click=7.1.2=pyhd3eb1b0_0
+  - cryptography=3.3.1=py38hbcfaee0_1
+  - gensim=3.8.3=py38hc84c608_2
+  - google-api-core=1.25.1=pyhd3eb1b0_0
+  - google-auth=1.27.0=pyhd3eb1b0_0
+  - google-cloud-core=1.6.0=pyhd3eb1b0_0
+  - google-cloud-storage=1.36.1=pyhd3eb1b0_0
+  - google-crc32c=1.1.2=py38h9ed2024_0
+  - google-resumable-media=1.2.0=pyhd3eb1b0_1
+  - googleapis-common-protos=1.52.0=py38hecd8cb5_0
+  - h5py=2.10.0=py38h0601b69_1
+  - hdf5=1.10.6=hdbbcd12_0
+  - idna=2.10=pyhd3eb1b0_0
   - intel-openmp=2019.4=233
+  - jmespath=0.10.0=py_0
+  - joblib=1.0.1=pyhd3eb1b0_0
   - jsonlines=2.0.0=pyhd3eb1b0_2
+  - libcrc32c=1.1.1=hb1e8313_2
   - libcxx=10.0.0=1
   - libedit=3.1.20191231=h1de35cc_1
   - libffi=3.3=hb1e8313_2
+  - libgfortran=3.0.1=h93005f0_2
+  - libprotobuf=3.14.0=h2842e9f_0
+  - llvm-openmp=10.0.0=h28b9765_0
   - mkl=2019.4=233
   - mkl-service=2.3.0=py38h9ed2024_0
-  - mkl_fft=1.2.0=py38hc64f4ea_0
+  - mkl_fft=1.3.0=py38ha059aab_0
   - mkl_random=1.1.1=py38h959d312_0
+  - multidict=5.1.0=py38h9ed2024_2
   - ncurses=6.2=h0a44026_1
+  - nltk=3.5=py_0
   - numpy=1.19.2=py38h456fd55_0
   - numpy-base=1.19.2=py38hcfb5961_0
-  - openssl=1.1.1i=h9ed2024_0
-  - pip=20.3.3=py38hecd8cb5_0
+  - openssl=1.1.1j=h9ed2024_0
+  - pip=21.0.1=py38hecd8cb5_0
+  - protobuf=3.14.0=py38h23ab428_1
+  - pyasn1=0.4.8=py_0
+  - pyasn1-modules=0.2.8=py_0
+  - pycparser=2.20=py_2
+  - pyopenssl=20.0.1=pyhd3eb1b0_1
+  - pysocks=1.7.1=py38_1
   - python=3.8.5=h26836e1_1
-  - readline=8.0=h1de35cc_0
-  - setuptools=51.1.2=py38hecd8cb5_4
+  - python-dateutil=2.8.1=pyhd3eb1b0_0
+  - python_abi=3.8=1_cp38
+  - readline=8.1=h9ed2024_0
+  - regex=2020.11.13=py38h9ed2024_0
+  - requests=2.25.1=pyhd3eb1b0_0
+  - rsa=4.7.2=pyhd3eb1b0_1
+  - s3transfer=0.3.4=pyhd3eb1b0_0
+  - scikit-learn=0.24.1=py38hb2f4e1b_0
+  - scipy=1.6.1=py38h2515648_0
+  - setuptools=52.0.0=py38hecd8cb5_0
   - six=1.15.0=py38hecd8cb5_0
+  - smart_open=4.2.0=pyhd3eb1b0_0
   - sqlite=3.33.0=hffcf06c_0
+  - threadpoolctl=2.1.0=pyh5ca1d4c_0
   - tk=8.6.10=hb0a8c7a_0
+  - tqdm=4.56.0=pyhd3eb1b0_0
+  - typing-extensions=3.7.4.3=hd3eb1b0_0
+  - typing_extensions=3.7.4.3=pyh06a4308_0
   - wheel=0.36.2=pyhd3eb1b0_0
+  - xvfbwrapper=0.2.9=py38h32f6830_1003
   - xz=5.2.5=h1de35cc_0
+  - yarl=1.5.1=py38haf1e3a3_0
   - zlib=1.2.11=h1de35cc_3
+  - pip:
+    - alabaster==0.7.12
+    - appdirs==1.4.4
+    - arrow==0.17.0
+    - babel==2.9.0
+    - beautifulsoup4==4.9.3
+    - bibtexparser==1.2.0
+    - chardet==4.0.0
+    - coloredlogs==15.0
+    - crossref-commons==0.0.7
+    - cssselect==1.1.0
+    - distlib==0.3.1
+    - docopt==0.6.2
+    - docutils==0.16
+    - eutils==0.6.0
+    - fake-useragent==0.1.11
+    - filelock==3.0.12
+    - free-proxy==1.0.2
+    - future==0.18.2
+    - habanero==0.7.4
+    - humanfriendly==9.1
+    - imagesize==1.2.0
+    - iniconfig==1.1.1
+    - jinja2==2.11.2
+    - lxml==4.6.2
+    - markupsafe==1.1.1
+    - metapub==0.5.5
+    - packaging==20.8
+    - pdfminer-six==20201018
+    - pluggy==0.13.1
+    - py==1.10.0
+    - pygments==2.7.4
+    - pyparsing==2.4.7
+    - pypdf2==1.26.0
+    - pytest==6.2.1
+    - python-dotenv==0.15.0
+    - python-levenshtein==0.12.1
+    - pytz==2020.5
+    - ratelimit==2.2.1
+    - scholarly==1.0.5
+    - selenium==3.141.0
+    - snowballstemmer==2.1.0
+    - sortedcontainers==2.3.0
+    - soupsieve==2.1
+    - sphinx==3.4.3
+    - sphinx-rtd-theme==0.5.1
+    - sphinxcontrib-applehelp==1.0.2
+    - sphinxcontrib-devhelp==1.0.2
+    - sphinxcontrib-htmlhelp==1.0.3
+    - sphinxcontrib-jsmath==1.0.1
+    - sphinxcontrib-qthelp==1.0.3
+    - sphinxcontrib-serializinghtml==1.1.4
+    - stem==1.8.0
+    - tabulate==0.8.7
+    - toml==0.10.2
+    - tox==3.21.2
+    - unidecode==1.1.2
+    - urllib3==1.26.2
+    - virtualenv==20.4.0
