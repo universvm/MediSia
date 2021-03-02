@@ -19,7 +19,7 @@ TFIDF_VECTORIZER = SEARCH_UTILS_FOLDER / "tfidf.pkl.bz2"
 BOW_PATH = SEARCH_UTILS_FOLDER / "bow.pkl.bz2"
 INDECES_FOLDER = DATA_FOLDER / "indeces"
 INDECES_FOLDER.mkdir(parents=True, exist_ok=True)
-
+BOW_LENGTH = 200000
 # Cleaning regex:
 punctuation = re.compile(r'([%s])+' % re.escape(string.punctuation), re.UNICODE)
 html_tags = re.compile(r"<([^>]+)>", re.UNICODE)

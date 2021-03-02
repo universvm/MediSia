@@ -20,6 +20,7 @@ from config import (
     DEFAULT_STOPWORDS,
     BIOPAPERS_WOUT_ABSTRACT_JSON_PATH,
     BIOPAPERS_W_ABSTRACT_JSON_PATH,
+    BOW_LENGTH,
 )
 from config import (
     spaces,
@@ -164,10 +165,11 @@ class BiopapersBOW:
 
 
 def create_bow_from_biopapers(
-    no_below: int = 3,
+    no_below: int = 2,
     no_above: float = 0.5,
     path_to_jsonl_index: Path = BIOPAPERS_JSON_PATH,
     outfile: Path = BOW_PATH,
+    keep_n: int = BOW_LENGTH,
     prune_at_idx: int = 10000,
 ) -> Dictionary:
     """
@@ -206,9 +208,9 @@ def create_bow_from_biopapers(
             collection_dictionary.merge_with(paper_vocabulary)
         if i % prune_at_idx == 0:
             # Filter words:
-            collection_dictionary.filter_extremes(no_below=no_below, no_above=no_above)
+            collection_dictionary.filter_extremes(no_below=no_below, no_above=no_above, keep_n=keep_n)
     # Final Filter words:
-    collection_dictionary.filter_extremes(no_below=no_below, no_above=no_above)
+    collection_dictionary.filter_extremes(no_below=no_below, no_above=no_above, keep_n=keep_n)
     # Save collection to file:
     collection_dictionary.save(str(outfile))
 
@@ -321,6 +323,7 @@ def convert_jsonl_to_pickle_bz(jsonl_path: Path, delete_jsonl: bool = True):
                 metadata_dict = dict(metadata_obj)
             else:
                 metadata_dict = {**metadata_dict, **dict(metadata_obj)}
+    # TODO this stalls for large files above 4GB
     # Write pickle to compressed BZ2:
     with bz2.BZ2File(pkl_bz_outfile, "wb") as writer:
         pickle.dump(metadata_dict, writer)
