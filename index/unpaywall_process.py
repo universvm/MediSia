@@ -7,6 +7,7 @@ import typing as t
 import urllib.request, json
 from io import StringIO, BytesIO
 from pathlib import Path
+from time import time
 
 import shutil
 import bz2
@@ -731,8 +732,11 @@ if __name__ == "__main__":
     # BiopapersFilter()
     # Download all abstracts:
     # AbstractDownloader()
+    start = time()
     # Annotate papers with category:
     CategoryAnnotator()
+    end = time()
+    print(end-start)
     # Annotate papers with the same category:
     # CategoryAnnotator(pool_all_categories=True)
     # Merge papers with abstract and category:
