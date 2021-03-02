@@ -205,8 +205,9 @@ class AbstractDownloader:
         results_stats = {
             k: 0 for k in ["bioarxiv", "pubmed", "crossref", "selenium", "na"]
         }
-        if Path(self.output_path_with_abstract).exists() and Path(
-            self.output_path_without_abstract.exists()
+        if (
+            Path(self.output_path_with_abstract).exists()
+            and Path(self.output_path_without_abstract).exists()
         ):
             # Calculate last papers searched overall so they can be skipped
             with jsonlines.open(
@@ -453,6 +454,7 @@ class CategoryAnnotator:
     """
     Annotates category for papers in JSONL file. Outputs an index of papers per category.
     """
+
     def __init__(
         self,
         indeces_folder: Path = INDECES_FOLDER,
@@ -483,8 +485,12 @@ class CategoryAnnotator:
         self.count = 0
 
         if self.pool_all_categories:
-            self.categorise_and_extract_papers(self.biopapers_with_abstract, checkpoint=0, category_to_file_dict={})
-            self.categorise_and_extract_papers(self.biopapers_without_abstract, checkpoint=0, category_to_file_dict={})
+            self.categorise_and_extract_papers(
+                self.biopapers_with_abstract, checkpoint=0, category_to_file_dict={}
+            )
+            self.categorise_and_extract_papers(
+                self.biopapers_without_abstract, checkpoint=0, category_to_file_dict={}
+            )
         else:
             # Get journals categories:
             # if txt file, parse it
@@ -736,7 +742,7 @@ if __name__ == "__main__":
     # Annotate papers with category:
     CategoryAnnotator()
     end = time()
-    print(end-start)
+    print(end - start)
     # Annotate papers with the same category:
     # CategoryAnnotator(pool_all_categories=True)
     # Merge papers with abstract and category:
