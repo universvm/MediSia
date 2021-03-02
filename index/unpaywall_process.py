@@ -27,7 +27,6 @@ from xvfbwrapper import Xvfb
 
 from index.tfidf_vectorizer import clean_and_tokenize_text
 from config import (
-    PAPERS_FOLDER,
     PAPERS_JSON_FOLDER,
     BIOJOURNALS_CATEGORIES_FILE,
     BIOPAPERS_JSON_PATH,
@@ -453,16 +452,15 @@ class CategoryAnnotator:
     """
     Annotates category for papers in JSONL file. Outputs an index of papers per category.
     """
-
     def __init__(
         self,
         indeces_folder: Path = INDECES_FOLDER,
         biopapers_with_abstract: Path = BIOPAPERS_W_ABSTRACT_JSON_PATH,
         biopapers_without_abstract: Path = BIOPAPERS_WOUT_ABSTRACT_JSON_PATH,
         journals_categories_path: Path = BIOJOURNALS_CATEGORIES_FILE,
+        pool_all_categories: bool = False,
     ):
         """
-
         Parameters
         ----------
         indeces_folder: Path
@@ -473,41 +471,49 @@ class CategoryAnnotator:
             Path to biopapers without abstract
         journals_categories_path: Path
             Path to Journals categories. Either .txt format or bz2
+        pool_all_categories: bool
+            Whether to have all the papers in one large category instead of multiple ones.
         """
         self.indeces_folder = indeces_folder
         self.biopapers_with_abstract = biopapers_with_abstract
         self.biopapers_without_abstract = biopapers_without_abstract
         self.journals_categories_path = journals_categories_path
-        # Get journals categories:
-        # if txt file, parse it
-        if self.journals_categories_path.suffix == ".txt":
-            (
-                self.journal_to_category,
-                self.categories_list,
-            ) = build_journal_category_dict(self.journals_categories_path)
-        elif self.journals_categories_path.suffix == ".bz2":
-            with bz2.BZ2File(self.journals_categories_path, "rb") as f:
-                self.journal_to_category = pickle.load(f)
-                self.categories_list = list(
-                    np.unique(self.journal_to_category.values())
-                )
-        else:
-            raise ValueError(
-                f"Journal categories file is of file type {journals_categories_path.suffix }. Supported types are .txt and .bz2"
-            )
+        self.pool_all_categories = pool_all_categories
+        self.count = 0
 
-        # Check all the category index in the folder
-        self.category_outpaths_list = list(self.indeces_folder.rglob("index_*"))
-        # Create category index
-        self.create_category_index()
-        # Save journals with nltk to file (saves time)
-        self.save_journal_to_category_dict()
+        if self.pool_all_categories:
+            self.categorise_and_extract_papers(self.biopapers_with_abstract, checkpoint=0, category_to_file_dict={})
+            self.categorise_and_extract_papers(self.biopapers_without_abstract, checkpoint=0, category_to_file_dict={})
+        else:
+            # Get journals categories:
+            # if txt file, parse it
+            if self.journals_categories_path.suffix == ".txt":
+                (
+                    self.journal_to_category,
+                    self.categories_list,
+                ) = build_journal_category_dict(self.journals_categories_path)
+            elif self.journals_categories_path.suffix == ".bz2":
+                with bz2.BZ2File(self.journals_categories_path, "rb") as f:
+                    self.journal_to_category = pickle.load(f)
+                    self.categories_list = list(
+                        np.unique(self.journal_to_category.values())
+                    )
+            else:
+                raise ValueError(
+                    f"Journal categories file is of file type {journals_categories_path.suffix}. Supported types are .txt and .bz2"
+                )
+            # Check all the category index in the folder
+            self.category_outpaths_list = list(self.indeces_folder.rglob("index_*"))
+            # Create category index
+            self.create_category_index()
+            # Save journals with nltk to file (saves time)
+            self.save_journal_to_category_dict()
+            print(f"Processed {self.count} files.")
 
     def create_category_index(self):
         """
         Creates an index for each category. Uses a dictionary of opened files.
         """
-
         # Dictionary storing all categories of papers created
         category_to_file_dict = {}
         # Count papers
@@ -538,14 +544,14 @@ class CategoryAnnotator:
                 f"Finished processing papers with abstract, moving to papers without."
             )
             papers_count -= abstract_checkpoint
+            # Process papers without abstract:
             category_to_file_dict = self.categorise_and_extract_papers(
                 self.biopapers_without_abstract, papers_count, category_to_file_dict
             )
-            # Process papers without abstract:
         else:
             # Process papers with abstract:
             category_to_file_dict = self.categorise_and_extract_papers(
-                self.biopapers_with_abstract, abstract_checkpoint, category_to_file_dict
+                self.biopapers_with_abstract, papers_count, category_to_file_dict
             )
             # Process papers without abstract
             category_to_file_dict = self.categorise_and_extract_papers(
@@ -582,7 +588,7 @@ class CategoryAnnotator:
             pool = mp.Pool()
             # Open reader and start from checkpoint rather than from 0
             checkpoint_reader = itertools.islice(reader, checkpoint, None)
-            print(checkpoint)
+            print(f"Current checkpoint: {checkpoint}")
             # For each paper:
             for paper_w_category_dict in pool.imap(
                 self.get_category, checkpoint_reader
@@ -593,14 +599,14 @@ class CategoryAnnotator:
                     category_to_file_dict[curr_category].write(paper_w_category_dict)
                 else:
                     # Create jsonl path
-                    category_path = (
-                            self.indeces_folder / f"index_{curr_category}.jsonl"
-                    )
+                    category_path = self.indeces_folder / f"index_{curr_category}.jsonl"
                     # Open file and add it to the dictionariy
                     writer = jsonlines.open(category_path, mode="a")
                     category_to_file_dict[curr_category] = writer
                     # Write paper:
                     writer.write(paper_w_category_dict)
+                # Increase count:
+                self.count += 1
 
         return category_to_file_dict
 
@@ -619,38 +625,43 @@ class CategoryAnnotator:
         paper_dict: dict
             Jsonline dictionary with the handle "category".
         """
-        journal = paper_dict["journal_name"]
-        # Clean text:
-        clean_journal = "".join(clean_and_tokenize_text(journal))
-        # If journal is present in categories:
-        if clean_journal in self.journal_to_category.keys():
-            paper_dict["category"] = self.journal_to_category[clean_journal]
+        # If merging all categories:
+        if self.pool_all_categories:
+            paper_dict["category"] = "all"
+        # Else divide index by category:
         else:
-            print(
-                f"{clean_journal} not found in Journals. Using NLTK to find closest match."
-            )
-            unique_journals = self.journal_to_category.keys()
-            # Create a dictionary of distances:
-            journal_distance_dict = {}
-            # For each journal:
-            for curr_journal in unique_journals:
-                # Measure distance
-                journal_distance_dict[curr_journal] = edit_distance(
-                    clean_journal, curr_journal
+            journal = paper_dict["journal_name"]
+            # Clean text:
+            clean_journal = "".join(clean_and_tokenize_text(journal))
+            # If journal is present in categories:
+            if clean_journal in self.journal_to_category.keys():
+                paper_dict["category"] = self.journal_to_category[clean_journal]
+            else:
+                print(
+                    f"{journal} not found in Journals. Using NLTK to find closest match."
                 )
-            # Sort by smallest to largest by distance value
-            journal_distances_list = sorted(
-                journal_distance_dict.items(), key=lambda x: x[1]
-            )
-            # Select closes journals:
-            closest_journal = journal_distances_list[0][0]
-            closest_category = self.journal_to_category[closest_journal]
-            print(
-                f"Closest journal for entry {clean_journal} was {closest_journal} of category {closest_category}."
-            )
-            # Add newly found journal to dictionaries:
-            self.journal_to_category[clean_journal] = closest_category
-            paper_dict["category"] = self.journal_to_category[clean_journal]
+                unique_journals = self.journal_to_category.keys()
+                # Create a dictionary of distances:
+                journal_distance_dict = {}
+                # For each journal:
+                for curr_journal in unique_journals:
+                    # Measure distance
+                    journal_distance_dict[curr_journal] = edit_distance(
+                        clean_journal, curr_journal
+                    )
+                # Sort by smallest to largest by distance value
+                journal_distances_list = sorted(
+                    journal_distance_dict.items(), key=lambda x: x[1]
+                )
+                # Select closes journals:
+                closest_journal = journal_distances_list[0][0]
+                closest_category = self.journal_to_category[closest_journal]
+                print(
+                    f"Closest journal for entry {journal} was {closest_journal} of category {closest_category}."
+                )
+                # Add newly found journal to dictionaries:
+                self.journal_to_category[clean_journal] = closest_category
+                paper_dict["category"] = self.journal_to_category[clean_journal]
         return paper_dict
 
     def save_journal_to_category_dict(self) -> dict:
@@ -687,10 +698,10 @@ class CategoryAnnotator:
 
 
 def merge_abstract_no_abstract_jsonl(
-        paper_w_abstract: Path = BIOPAPERS_W_ABSTRACT_JSON_PATH,
-        paper_wout_abstract: Path = BIOPAPERS_WOUT_ABSTRACT_JSON_PATH,
-        output_file: Path = BIOPAPERS_JSON_PATH,
-    ):
+    paper_w_abstract: Path = BIOPAPERS_W_ABSTRACT_JSON_PATH,
+    paper_wout_abstract: Path = BIOPAPERS_WOUT_ABSTRACT_JSON_PATH,
+    output_file: Path = BIOPAPERS_JSON_PATH,
+):
     """
     Merges papers with and without abstract into one file.
 
@@ -705,10 +716,10 @@ def merge_abstract_no_abstract_jsonl(
 
     """
     # Open outfile
-    with open(output_file, 'wb') as wfd:
+    with open(output_file, "wb") as wfd:
         # For both papers:
         for f in [paper_w_abstract, paper_wout_abstract]:
-            with open(f, 'rb') as fd:
+            with open(f, "rb") as fd:
                 # Merge files
                 shutil.copyfileobj(fd, wfd)
                 # add new line at the end of the file
@@ -716,5 +727,13 @@ def merge_abstract_no_abstract_jsonl(
 
 
 if __name__ == "__main__":
-    # CategoryAnnotator()
-    merge_abstract_no_abstract_jsonl()
+    # Filter all papers by bio-journals:
+    # BiopapersFilter()
+    # Download all abstracts:
+    # AbstractDownloader()
+    # Annotate papers with category:
+    CategoryAnnotator()
+    # Annotate papers with the same category:
+    # CategoryAnnotator(pool_all_categories=True)
+    # Merge papers with abstract and category:
+    # merge_abstract_no_abstract_jsonl()
