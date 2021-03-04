@@ -594,7 +594,7 @@ class CategoryAnnotator:
             # Create Muliprocessing Pool:
             pool = mp.Pool()
             # Open reader and start from checkpoint rather than from 0
-            checkpoint_reader = itertools.islice(reader, checkpoint, None)
+            checkpoint_reader = itertools.islice(reader, checkpoint)
             print(f"Current checkpoint: {checkpoint}")
             # For each paper:
             for paper_w_category_dict in pool.imap(
