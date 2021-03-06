@@ -525,25 +525,23 @@ class CategoryAnnotator:
         category_to_file_dict = {}
         # Count papers
         papers_count = 0
+        # Calculate last papers searched overall so they can be skipped
         if len(self.category_outpaths_list) > 0:
-            # Calculate last papers searched overall so they can be skipped
-            if len(self.category_outpaths_list) > 0:
-                # For each path available:
-                for cat_path in self.category_outpaths_list:
-                    # Extract category name:
-                    curr_category = str(cat_path.stem).split("index_")[-1]
-                    with jsonlines.open(cat_path, mode="r") as reader:
-                        # Count the papers in category:
-                        papers_count += len(list(reader))
-                    # open file in append mode and add to dictionary:
-                    writer = jsonlines.open(cat_path, mode="a")
-                    # Save open file to dict:
-                    category_to_file_dict[curr_category] = writer
+            # For each path available:
+            for cat_path in self.category_outpaths_list:
+                # Extract category name:
+                curr_category = str(cat_path.stem).split("index_")[-1]
+                with jsonlines.open(cat_path, mode="r") as reader:
+                    # Count the papers in category:
+                    papers_count += sum(1 for line in reader)
+                # open file in append mode and add to dictionary:
+                writer = jsonlines.open(cat_path, mode="a")
+                # Save open file to dict:
+                category_to_file_dict[curr_category] = writer
 
         # Count how many papers with abstract there are:
-        abstract_checkpoint = 0
         with jsonlines.open(self.biopapers_with_abstract, mode="r") as reader:
-            abstract_checkpoint += len(list(reader))
+            abstract_checkpoint = sum(1 for line in reader)
         # If papers processed is higher than abstract papers,
         # move to papers without abstract
         if papers_count >= abstract_checkpoint:
@@ -594,7 +592,7 @@ class CategoryAnnotator:
             # Create Muliprocessing Pool:
             pool = mp.Pool()
             # Open reader and start from checkpoint rather than from 0
-            checkpoint_reader = itertools.islice(reader, checkpoint)
+            checkpoint_reader = itertools.islice(reader, checkpoint, 0)
             print(f"Current checkpoint: {checkpoint}")
             # For each paper:
             for paper_w_category_dict in pool.imap(
@@ -614,7 +612,9 @@ class CategoryAnnotator:
                     writer.write(paper_w_category_dict)
                 # Increase count:
                 self.count += 1
-
+                if self.count % 10000:
+                    print(f"Analysed {self.count} papers.")
+        print(f"Finished {paper_to_open}.")
         return category_to_file_dict
 
     def get_category(self, paper_dict: dict) -> dict:
@@ -644,9 +644,6 @@ class CategoryAnnotator:
             if clean_journal in self.journal_to_category.keys():
                 paper_dict["category"] = self.journal_to_category[clean_journal]
             else:
-                print(
-                    f"{journal} not found in Journals. Using NLTK to find closest match."
-                )
                 unique_journals = self.journal_to_category.keys()
                 # Create a dictionary of distances:
                 journal_distance_dict = {}
