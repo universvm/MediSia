@@ -300,7 +300,7 @@ def convert_corpus_to_sparse_tfidf(
     # Save corpus and index to file:
     MmCorpus.serialize(str(vectorized_corpus_outpath), tfidf_corpus)
     # Convert Jsonlines to pickle bz2
-    convert_jsonl_to_pickle_bz(metadata_index_outpath)
+    # convert_jsonl_to_pickle_bz(metadata_index_outpath)
 
 
 def convert_jsonl_to_pickle_bz(jsonl_path: Path, delete_jsonl: bool = True):

@@ -1,15 +1,17 @@
-import bz2
+import linecache
+from time import time
+from operator import itemgetter
+from pathlib import Path
+
 from gensim.corpora.mmcorpus import MmCorpus
 from gensim.test.utils import get_tmpfile
 from gensim.similarities.docsim import Similarity
+
 from config import INDECES_FOLDER
-import pickle
 from index.tfidf_vectorizer import convert_str_to_tfidf
-from pathlib import Path
-from time import time
 
 
-def search_query_in_category(query: str, category: str, indeces_folder: Path = INDECES_FOLDER):
+def search_query_in_category(query: str, category: str, indeces_folder: Path = INDECES_FOLDER, top_k: int = 300):
     """
     Searches query in a specific category of index.
 
@@ -29,21 +31,16 @@ def search_query_in_category(query: str, category: str, indeces_folder: Path = I
     # Load corpora for specific category
     category_corpus_path = indeces_folder / f"{category}_corpus.mm"
     corpus = MmCorpus(str(category_corpus_path))
-    # TODO: This could be saved to file and reloaded:
     index = Similarity(index_tmpfile, corpus, num_features=bow_len)
-    # Cosine search
+    # Cosine search:
     similarity_results = index[tfidf_query]
     # Sort by most relevant:
-    sorted_docid_results = sorted(range(len(similarity_results)), key=lambda k: similarity_results[k], reverse=True)
-    # TODO: Indeces could be loaded in memory while search is going:
+    sorted_docid_results = sorted(range(len(similarity_results)), key=lambda k: similarity_results[k], reverse=True)[:top_k]
     # Import metadata
-    metadata_dict_path = indeces_folder / f"{category}_metadata.bz2"
-    with bz2.BZ2File(metadata_dict_path, "rb") as f:
-        metadata_dict = pickle.load(f)
-
-    print(metadata_dict[str(sorted_docid_results[0])])
-    print(metadata_dict[str(sorted_docid_results[1])])
-    print(metadata_dict[str(sorted_docid_results[2])])
+    # TODO: This can be preindexed:
+    metadata_dict_path = indeces_folder / f"{category}_metadata.jsonl"
+    metadata = linecache.getlines(str(metadata_dict_path))
+    print(itemgetter(*sorted_docid_results)(metadata))
 
 
 if __name__ == '__main__':
