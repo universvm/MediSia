@@ -91,7 +91,7 @@ class BiopapersCorpus:
 
     def __iter__(self):
         for json_line in tqdm(
-            jsonlines.open(self.index_path), "Iterating through corpora"
+            jsonlines.open(self.index_path), f"Iterating through corpora {self.index_path}"
         ):
             # Initialize empty abstract and title:
             abstract = ""
@@ -300,7 +300,7 @@ def convert_corpus_to_sparse_tfidf(
     # Save corpus and index to file:
     MmCorpus.serialize(str(vectorized_corpus_outpath), tfidf_corpus)
     # Convert Jsonlines to pickle bz2
-    # convert_jsonl_to_pickle_bz(metadata_index_outpath)
+    convert_jsonl_to_pickle_bz(metadata_index_outpath)
 
 
 def convert_jsonl_to_pickle_bz(jsonl_path: Path, delete_jsonl: bool = True):
@@ -318,7 +318,7 @@ def convert_jsonl_to_pickle_bz(jsonl_path: Path, delete_jsonl: bool = True):
     metadata_dict = {}
     # Open jsonlines and update dictionary:
     with jsonlines.open(jsonl_path) as reader:
-        for i, metadata_obj in enumerate(reader):
+        for i, metadata_obj in enumerate(tqdm(reader, desc=f"Building metadata {pkl_bz_outfile}"),):
             if i == 0:
                 metadata_dict = dict(metadata_obj)
             else:
@@ -326,7 +326,8 @@ def convert_jsonl_to_pickle_bz(jsonl_path: Path, delete_jsonl: bool = True):
     # TODO this stalls for large files above 4GB
     # Write pickle to compressed BZ2:
     with bz2.BZ2File(pkl_bz_outfile, "wb") as writer:
-        writer.write(metadata_dict)
+        pickle.dump(metadata_dict, writer, pickle.HIGHEST_PROTOCOL)
+
     # Remove Jsonlines file
     if delete_jsonl:
         try:
