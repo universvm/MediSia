@@ -38,8 +38,8 @@ def search_query_in_category(query: str, category: str, indeces_folder: Path = I
     sorted_docid_results = sorted(range(len(similarity_results)), key=lambda k: similarity_results[k], reverse=True)[:top_k]
     # Import metadata
     # TODO: This can be preindexed:
-    metadata_dict_path = indeces_folder / f"{category}_metadata.jsonl"
-    metadata = linecache.getlines(str(metadata_dict_path))
+    index_path = indeces_folder / f"index_{category}.jsonl"
+    metadata = linecache.getlines(str(index_path))
     print(itemgetter(*sorted_docid_results)(metadata))
 
 
