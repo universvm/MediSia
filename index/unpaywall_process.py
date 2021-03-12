@@ -598,22 +598,26 @@ class CategoryAnnotator:
             for paper_w_category_dict in pool.imap(
                 self.get_category, checkpoint_reader
             ):
-                curr_category = paper_w_category_dict["category"]
-                # If category file is present and opened:
-                if curr_category in category_to_file_dict.keys():
-                    category_to_file_dict[curr_category].write(paper_w_category_dict)
+                if paper_w_category_dict:
+                    curr_category = paper_w_category_dict["category"]
+                    # If category file is present and opened:
+                    if curr_category in category_to_file_dict.keys():
+                        category_to_file_dict[curr_category].write(paper_w_category_dict)
+                    else:
+                        # Create jsonl path
+                        category_path = self.indeces_folder / f"index_{curr_category}.jsonl"
+                        # Open file and add it to the dictionariy
+                        writer = jsonlines.open(category_path, mode="a")
+                        category_to_file_dict[curr_category] = writer
+                        # Write paper:
+                        writer.write(paper_w_category_dict)
+                    # Increase count:
+                    self.count += 1
+                    if self.count % 10000 == 0:
+                        print(f"Analysed {self.count} papers.")
                 else:
-                    # Create jsonl path
-                    category_path = self.indeces_folder / f"index_{curr_category}.jsonl"
-                    # Open file and add it to the dictionariy
-                    writer = jsonlines.open(category_path, mode="a")
-                    category_to_file_dict[curr_category] = writer
-                    # Write paper:
-                    writer.write(paper_w_category_dict)
-                # Increase count:
-                self.count += 1
-                if self.count % 10000 == 0:
-                    print(f"Analysed {self.count} papers.")
+                    continue
+                    
         print(f"Finished {paper_to_open}.")
         return category_to_file_dict
 
@@ -660,9 +664,9 @@ class CategoryAnnotator:
                 # Select closes journals:
                 closest_journal = journal_distances_list[0][0]
                 closest_category = self.journal_to_category[closest_journal]
-                print(
-                    f"Closest journal for entry {journal} was {closest_journal} of category {closest_category}."
-                )
+                #print(
+                #    f"Closest journal for entry {journal} was {closest_journal} of category {closest_category}."
+                #)
                 # Add newly found journal to dictionaries:
                 self.journal_to_category[clean_journal] = closest_category
                 paper_dict["category"] = self.journal_to_category[clean_journal]
@@ -728,7 +732,33 @@ def merge_abstract_no_abstract_jsonl(
                 shutil.copyfileobj(fd, wfd)
                 # add new line at the end of the file
                 wfd.write(b"\n")
+                
+                
+def merge_indeces_jsonl(
+    indeces_folder: Path = INDECES_FOLDER,
+):
+    """
+    Merges category indeces into one large jsonl index.
 
+    Parameters
+    ----------
+    indeces_folder: Path
+        Path to category indeces (.jsonl files)
+    output_file: Path
+        Output file path
+
+    """
+    output_file: Path = INDECES_FOLDER / "index_all.jsonl"
+    indeces_paths = list(INDECES_FOLDER.rglob("index_*"))
+    # Open outfile
+    with open(output_file, "wb") as wfd:
+        # For both papers:
+        for f in indeces_paths:
+            with open(f, "rb") as fd:
+                # Merge files
+                shutil.copyfileobj(fd, wfd)
+                # add new line at the end of the file
+                #wfd.write(b"\n")
 
 if __name__ == "__main__":
     # Filter all papers by bio-journals:
@@ -737,10 +767,11 @@ if __name__ == "__main__":
     # AbstractDownloader()
     start = time()
     # Annotate papers with category:
-    CategoryAnnotator()
+    #CategoryAnnotator()
+    merge_indeces_jsonl()
     end = time()
     print(end - start)
     # Annotate papers with the same category:
-    # CategoryAnnotator(pool_all_categories=True)
+    #CategoryAnnotator(pool_all_categories=True)
     # Merge papers with abstract and category:
-    # merge_abstract_no_abstract_jsonl()
+    #merge_abstract_no_abstract_jsonl()

@@ -15,6 +15,7 @@ from tqdm import tqdm
 from config import (
     BIOPAPERS_JSON_PATH,
     BOW_PATH,
+    DATA_FOLDER,
     TFIDF_VECTORIZER,
     INDECES_FOLDER,
     DEFAULT_STOPWORDS,
@@ -170,7 +171,7 @@ def create_bow_from_biopapers(
     path_to_jsonl_index: Path = BIOPAPERS_JSON_PATH,
     outfile: Path = BOW_PATH,
     keep_n: int = BOW_LENGTH,
-    prune_at_idx: int = 10000,
+    prune_at_idx: int = 100000,
 ) -> Dictionary:
     """
     Create bag of words dictionary from jsonl biopapers
@@ -208,7 +209,7 @@ def create_bow_from_biopapers(
             collection_dictionary.merge_with(paper_vocabulary)
         if i % prune_at_idx == 0:
             # Filter words:
-            collection_dictionary.filter_extremes(no_below=no_below, no_above=no_above, keep_n=keep_n)
+            collection_dictionary.filter_extremes(no_below=1, no_above=no_above, keep_n=keep_n*2)
     # Final Filter words:
     collection_dictionary.filter_extremes(no_below=no_below, no_above=no_above, keep_n=keep_n)
     # Save collection to file:

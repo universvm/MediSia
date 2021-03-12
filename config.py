@@ -19,7 +19,7 @@ TFIDF_VECTORIZER = SEARCH_UTILS_FOLDER / "tfidf.pkl.bz2"
 BOW_PATH = SEARCH_UTILS_FOLDER / "bow.pkl.bz2"
 INDECES_FOLDER = DATA_FOLDER / "indeces"
 INDECES_FOLDER.mkdir(parents=True, exist_ok=True)
-BOW_LENGTH = 200000
+BOW_LENGTH = 300000
 # Cleaning regex:
 punctuation = re.compile(r'([%s])+' % re.escape(string.punctuation), re.UNICODE)
 html_tags = re.compile(r"<([^>]+)>", re.UNICODE)
@@ -34,5 +34,5 @@ MEDICAL_STOPWORDS = set(["disease", "diseases", "disorder", "symptom", "symptoms
 MEDICAL_STOPWORDS2 = set(["a", "about", "again", "all", "almost", "also", "although", "always", "among", "an", "and", "another", "any", "are", "as", "at", "be", "because", "been", "before", "being", "between", "both", "but", "by", "can", "could", "did", "do", "does", "done", "due", "during", "each", "either", "enough", "especially", "etc", "for", "found", "from", "further", "had", "has", "have", "having", "here", "how", "however", "i", "if", "in", "into", "is", "it", "its", "itself", "just", "kg", "km", "made", "mainly", "make", "may", "mg", "might", "ml", "mm", "most", "mostly", "must", "nearly", "neither", "no", "nor", "obtained", "of", "often", "on", "our", "overall", "perhaps", "pmid", "quite", "rather", "really", "regarding", "seem", "seen", "several", "should", "show", "showed", "shown", "shows", "significantly", "since", "so", "some", "such", "than", "that", "the", "their", "theirs", "them", "then", "there", "therefore", "these", "they", "this", "those", "through", "thus", "to", "upon", "various", "very", "was", "we", "were", "what", "when", "which", "while", "with", "within", "without", "would"])
 # from https://pubmed.ncbi.nlm.nih.gov/help/#help-stopwords
 GENERAL_STOPWORDS = set(STOPWORDS)
-OTHER_STOPWORDS = set(["copyright", "facebook", "twitter", "email", "journal", "review", "volume", "date", "none"])
+OTHER_STOPWORDS = set(["copyright", "facebook", "twitter", "email", "journal", "review", "volume", "date", "none", "pdf"])
 DEFAULT_STOPWORDS = MEDICAL_STOPWORDS | GENERAL_STOPWORDS | MEDICAL_STOPWORDS2 | OTHER_STOPWORDS

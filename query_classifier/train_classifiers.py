@@ -42,7 +42,7 @@ class ModelTrainer:
         epochs: int
             Number of epochs.
         val_split: float
-            Split for validation data. (2/3 are for validation and 1/3 for test)
+            Split for validation data. (9/10 are for validation and 1/10 for test)
         bow_length: int
             Number of features in the BoW.
         skmodel: Scikit Learn model
@@ -147,7 +147,7 @@ class ModelTrainer:
                 list(range(corpus_length)), test_size=self.val_split, random_state=42
             )
             X_val, X_test = train_test_split(
-                X_val_test, test_size=self.val_split * (2 / 3), random_state=42
+                X_val_test, test_size=self.val_split * (1 / 10), random_state=42
             )
             # Add range of docIDs to dictionary:
             train_category_to_docIDs[category] = X_train
@@ -227,52 +227,59 @@ class ModelTrainer:
         metrics: dict
             Dictionary with accuracy, top2, top3, precision, recall and auc
         """
-        # Load data:
-        X_test, y_test = self.load_batch_data(
-            categories_to_corpus, test_category_to_docIDs, -1
-        )
-        # Predict data:
-        y_predicted = self.skmodel.predict(X_test)
-        start = time()
-        y_score = self.skmodel.predict_proba(X_test)
-        end = time()
-        # Calculate time elapsed
-        total_time = end - start
-        # Calculate metrics:
+        n_batches = 10
         metrics = {
             "accuracy": 0,
             "top2": 0,
             "top3": 0,
             "precision": 0,
             "recall": 0,
-            "auc": 0,
-            "time": total_time,
+            "time": 0,
         }
-        test_accuracy = accuracy_score(y_true=y_test, y_pred=y_predicted)
-        test_precision = precision_score(
-            y_true=y_test, y_pred=y_predicted, average="macro"
+
+        # Load data:
+        X_test_all, y_test_all = self.load_batch_data(
+            categories_to_corpus, test_category_to_docIDs, -1
         )
-        test_recall = recall_score(y_true=y_test, y_pred=y_predicted, average="macro")
-        test_auc = roc_auc_score(
-            y_true=y_test, y_score=y_score, average="macro", multi_class="ovr"
-        )
-        test_top2 = top_k_accuracy_score(
-            y_true=y_test, y_score=y_score, k=2, labels=np.unique(y_test)
-        )
-        test_top3 = top_k_accuracy_score(
-            y_true=y_test, y_score=y_score, k=3, labels=np.unique(y_test)
-        )
-        # Save and Report metrics:
-        metrics["accuracy"] = test_accuracy
-        metrics["top2"] = test_top2
-        metrics["top3"] = test_top3
-        metrics["precision"] = test_precision
-        metrics["recall"] = test_recall
-        metrics["auc"] = test_auc
-        print(metrics)
-        # Delete to save space:
-        del X_test
-        del y_test
+        n_docs_per_batch = int(len(X_test_all) / n_batches)
+        for i in range(n_batches-1):
+            print(f"Test {i}")
+            X_test = X_test_all[i*n_docs_per_batch:(i+1)*n_docs_per_batch]
+            y_test = y_test_all[i*n_docs_per_batch:(i+1)*n_docs_per_batch]
+            # Predict data:
+            y_predicted = self.skmodel.predict(X_test)
+            start = time()
+            y_score = self.skmodel.predict_proba(X_test)
+            end = time()
+            # Calculate time elapsed
+            total_time = end - start
+            # Calculate metrics:
+            test_accuracy = accuracy_score(y_true=y_test, y_pred=y_predicted)
+            test_precision = precision_score(
+                y_true=y_test, y_pred=y_predicted, average="macro"
+            )
+            test_recall = recall_score(y_true=y_test, y_pred=y_predicted, average="macro")
+            #test_auc = roc_auc_score(
+            #    y_true=y_test, y_score=y_score, average="macro", multi_class="ovr"
+            #)
+            test_top2 = top_k_accuracy_score(
+                y_true=y_test, y_score=y_score, k=2, labels=np.unique(y_test)
+            )
+            test_top3 = top_k_accuracy_score(
+                y_true=y_test, y_score=y_score, k=3, labels=np.unique(y_test)
+            )
+            # Save and Report metrics:
+            metrics["accuracy"] = (metrics["accuracy"] + test_accuracy) / 2
+            metrics["top2"] = (metrics["top2"] + test_top2) / 2
+            metrics["top3"] = (metrics["top3"] + test_top3) / 2
+            metrics["precision"] = (metrics["precision"]+ test_precision) /2
+            metrics["recall"] = (metrics["recall"]+ test_recall) /2
+            #metrics["auc"] += test_auc
+            metrics["time"] = (metrics["time"]+total_time) / 2
+            print(metrics)
+            # Delete to save space:
+            del X_test
+            del y_test
 
         return metrics
 
@@ -311,8 +318,10 @@ class ModelTrainer:
             cat_batch = category_to_docIDs[cat]
             if n_docs_per_batch == -1:
                 n_docs_per_batch = len(cat_batch)
-            # Randomly sample from documents within class:
-            batch_docs = np.random.choice(cat_batch, n_docs_per_batch)
+                batch_docs = cat_batch
+            else:
+                # Randomly sample from documents within class:
+                batch_docs = np.random.choice(cat_batch, n_docs_per_batch)
             # Extract corpus of each document:
             for doc_idx in batch_docs:
                 # Append corpus:
@@ -354,14 +363,14 @@ class ModelTrainer:
 
 if __name__ == "__main__":
     models = [
-        GaussianNB(),
         MultinomialNB(),
+        GaussianNB(),
         BernoulliNB(),
         SGDClassifier(loss="log"),
     ]
 
     for model in models:
         trainer = ModelTrainer(
-            epochs=15, val_split=0.2, bow_length=100000, skmodel=model
+            epochs=20, val_split=0.20, bow_length=300000, skmodel=model
         )
         trainer.train()
