@@ -3,7 +3,6 @@ from time import time
 from operator import itemgetter
 from pathlib import Path
 
-import gensim
 from gensim.corpora.mmcorpus import MmCorpus
 from gensim.test.utils import get_tmpfile
 from gensim.similarities.docsim import Similarity, SparseMatrixSimilarity
@@ -41,22 +40,15 @@ def search_query_in_category(query: str, category: str, indeces_folder: Path = I
         # Cosine search:
         similarity_results = index[tfidf_query]
     
-    #sorted_docid_results = similarity_results
     # Sort by most relevant:
     sorted_docid_results = sorted(range(len(similarity_results)), key=lambda k: similarity_results[k], reverse=True)[:top_k]
     # Import metadata
-    # TODO: This can be preindexed:
     index_path = indeces_folder / f"index_{category}.jsonl"
     metadata = linecache.getlines(str(index_path))
     print(itemgetter(*sorted_docid_results)(metadata))
 
-#def calculate_similarity_for_corpus_chunk(similarity_fn, corpus_cunk)
 
 if __name__ == '__main__':
-    #start = time()
-    #search_query_in_category("coronavirus", "virology", top_k = 10, sparse_search=False)
-    #end = time()
-    #print(end-start)
     start = time()
     search_query_in_category("coronavirus", "biochemistry", top_k=10, sparse_search=True)
     end = time()
