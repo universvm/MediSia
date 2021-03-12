@@ -1,0 +1,110 @@
+aiohttp @ file:///opt/concourse/worker/volumes/live/c3cb6692-82cf-4cbe-4c9c-30944b7532e9/volume/aiohttp_1614360972016/work
+alabaster==0.7.12
+appdirs==1.4.4
+arrow==0.17.0
+async-timeout==3.0.1
+attrs @ file:///tmp/build/80754af9/attrs_1604765588209/work
+Babel==2.9.0
+beautifulsoup4==4.9.3
+bibtexparser==1.2.0
+boto==2.49.0
+boto3 @ file:///tmp/build/80754af9/boto3_1614015198636/work
+botocore @ file:///tmp/build/80754af9/botocore_1614361462893/work
+brotlipy==0.7.0
+cachetools @ file:///tmp/build/80754af9/cachetools_1611600262290/work
+certifi==2020.12.5
+cffi @ file:///opt/concourse/worker/volumes/live/0ef369cc-6ba0-47e7-75da-208c6400381d/volume/cffi_1613246948181/work
+chardet==4.0.0
+click @ file:///home/linux1/recipes/ci/click_1610990599742/work
+coloredlogs==15.0
+crossref-commons==0.0.7
+cryptography @ file:///opt/concourse/worker/volumes/live/61d16c80-891a-48c5-6376-6899ef51ea28/volume/cryptography_1613401441154/work
+cssselect==1.1.0
+distlib==0.3.1
+docopt==0.6.2
+docutils==0.16
+eutils==0.6.0
+fake-useragent==0.1.11
+filelock==3.0.12
+free-proxy==1.0.2
+future==0.18.2
+gensim @ file:///Users/runner/miniforge3/conda-bld/gensim_1589441204121/work
+google-api-core @ file:///C:/ci/google-api-core-split_1613980333946/work
+google-auth @ file:///tmp/build/80754af9/google-auth_1613588361630/work
+google-cloud-core @ file:///tmp/build/80754af9/google-cloud-core_1613414810663/work
+google-cloud-storage @ file:///tmp/build/80754af9/google-cloud-storage_1614362409953/work
+google-crc32c @ file:///opt/concourse/worker/volumes/live/423965c9-74d0-49ca-5750-745a67e15b38/volume/google-crc32c_1612242918626/work
+google-resumable-media @ file:///tmp/build/80754af9/google-resumable-media_1608056254223/work
+googleapis-common-protos @ file:///opt/concourse/worker/volumes/live/672c7a02-d061-4d6b-693d-bc534a88bbf1/volume/googleapis-common-protos-feedstock_1613725139744/work
+h5py @ file:///opt/concourse/worker/volumes/live/ca975206-a8f5-4947-64c0-5af2e33e601d/volume/h5py_1593454180658/work
+habanero==0.7.4
+humanfriendly==9.1
+idna @ file:///home/linux1/recipes/ci/idna_1610986105248/work
+imagesize==1.2.0
+iniconfig==1.1.1
+Jinja2==2.11.2
+jmespath @ file:///tmp/build/80754af9/jmespath_1594304593830/work
+joblib @ file:///tmp/build/80754af9/joblib_1613502643832/work
+jsonlines @ file:///tmp/build/80754af9/jsonlines_1609785323125/work
+lxml==4.6.2
+MarkupSafe==1.1.1
+metapub==0.5.5
+mkl-fft==1.3.0
+mkl-random==1.1.1
+mkl-service==2.3.0
+multidict @ file:///opt/concourse/worker/volumes/live/13289f20-f4bb-4e3d-7e57-60a41fceffd4/volume/multidict_1607367786469/work
+nltk @ file:///tmp/build/80754af9/nltk_1592496090529/work
+numpy @ file:///opt/concourse/worker/volumes/live/5572694e-967a-4c0c-52cf-b53d43e72de9/volume/numpy_and_numpy_base_1603491881791/work
+packaging==20.8
+pdfminer.six==20201018
+pluggy==0.13.1
+protobuf==3.14.0
+py==1.10.0
+pyasn1==0.4.8
+pyasn1-modules==0.2.8
+pycparser @ file:///tmp/build/80754af9/pycparser_1594388511720/work
+Pygments==2.7.4
+pyOpenSSL @ file:///tmp/build/80754af9/pyopenssl_1608057966937/work
+pyparsing==2.4.7
+PyPDF2==1.26.0
+PySocks @ file:///opt/concourse/worker/volumes/live/85a5b906-0e08-41d9-6f59-084cee4e9492/volume/pysocks_1594394636991/work
+pytest==6.2.1
+python-dateutil @ file:///home/ktietz/src/ci/python-dateutil_1611928101742/work
+python-dotenv==0.15.0
+python-Levenshtein==0.12.1
+pytz @ file:///tmp/build/80754af9/pytz_1612215392582/work
+ratelimit==2.2.1
+regex @ file:///opt/concourse/worker/volumes/live/c84a6349-3315-46e4-634b-b5582dea058b/volume/regex_1606691109605/work
+requests @ file:///tmp/build/80754af9/requests_1608241421344/work
+rsa @ file:///tmp/build/80754af9/rsa_1614366226499/work
+s3transfer @ file:///tmp/build/80754af9/s3transfer_1610404175646/work
+scholarly==1.0.5
+scikit-learn @ file:///opt/concourse/worker/volumes/live/0c77b068-a026-4996-6842-33e5544ec13b/volume/scikit-learn_1614446667823/work
+scipy @ file:///opt/concourse/worker/volumes/live/6dffae74-cfc9-42e9-6005-4cc55f8e27a1/volume/scipy_1614022792494/work
+selenium==3.141.0
+six @ file:///opt/concourse/worker/volumes/live/5b31cb27-1e37-4ca5-6e9f-86246eb206d2/volume/six_1605205320872/work
+smart-open @ file:///tmp/build/80754af9/smart_open_1614023135845/work
+snowballstemmer==2.1.0
+sortedcontainers==2.3.0
+soupsieve==2.1
+Sphinx==3.4.3
+sphinx-rtd-theme==0.5.1
+sphinxcontrib-applehelp==1.0.2
+sphinxcontrib-devhelp==1.0.2
+sphinxcontrib-htmlhelp==1.0.3
+sphinxcontrib-jsmath==1.0.1
+sphinxcontrib-qthelp==1.0.3
+sphinxcontrib-serializinghtml==1.1.4
+stem==1.8.0
+tabulate==0.8.7
+threadpoolctl @ file:///tmp/tmp9twdgx9k/threadpoolctl-2.1.0-py3-none-any.whl
+toml==0.10.2
+tox==3.21.2
+tqdm @ file:///tmp/build/80754af9/tqdm_1611857934208/work
+typing-extensions @ file:///tmp/build/80754af9/typing_extensions_1611751222202/work
+Unidecode==1.1.2
+urllib3 @ file:///tmp/build/80754af9/urllib3_1611694770489/work
+virtualenv==20.4.0
+xvfbwrapper @ file:///Users/runner/miniforge3/conda-bld/xvfbwrapper_1603282912096/work
+yapf==0.30.0
+yarl @ file:///opt/concourse/worker/volumes/live/1ca49bfe-d6bc-4f62-4ca7-30c33d4f9b33/volume/yarl_1598045187281/work

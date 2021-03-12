@@ -12,8 +12,27 @@ from gensim.models import TfidfModel
 from gensim.parsing.preprocessing import PorterStemmer
 from tqdm import tqdm
 
-from config import BIOPAPERS_JSON_PATH, BOW_PATH, TFIDF_VECTORIZER, INDECES_FOLDER, DEFAULT_STOPWORDS
-from config import spaces, num_alpha, alpha_num, non_letters, numbers, html_tags, punctuation
+from config import (
+    BIOPAPERS_JSON_PATH,
+    BOW_PATH,
+    DATA_FOLDER,
+    TFIDF_VECTORIZER,
+    INDECES_FOLDER,
+    DEFAULT_STOPWORDS,
+    BIOPAPERS_WOUT_ABSTRACT_JSON_PATH,
+    BIOPAPERS_W_ABSTRACT_JSON_PATH,
+    BOW_LENGTH,
+)
+from config import (
+    spaces,
+    num_alpha,
+    alpha_num,
+    non_letters,
+    numbers,
+    html_tags,
+    punctuation,
+)
+
 p = PorterStemmer()
 
 
@@ -73,7 +92,7 @@ class BiopapersCorpus:
 
     def __iter__(self):
         for json_line in tqdm(
-            jsonlines.open(self.index_path), "Iterating through corpora"
+            jsonlines.open(self.index_path), f"Iterating through corpora {self.index_path}"
         ):
             # Initialize empty abstract and title:
             abstract = ""
@@ -147,11 +166,12 @@ class BiopapersBOW:
 
 
 def create_bow_from_biopapers(
-    no_below: int = 3,
+    no_below: int = 2,
     no_above: float = 0.5,
     path_to_jsonl_index: Path = BIOPAPERS_JSON_PATH,
     outfile: Path = BOW_PATH,
-    prune_at_idx: int = 1000,
+    keep_n: int = BOW_LENGTH,
+    prune_at_idx: int = 100000,
 ) -> Dictionary:
     """
     Create bag of words dictionary from jsonl biopapers
@@ -187,11 +207,11 @@ def create_bow_from_biopapers(
             collection_dictionary = paper_vocabulary
         else:
             collection_dictionary.merge_with(paper_vocabulary)
-        if i % prune_at_idx:
+        if i % prune_at_idx == 0:
             # Filter words:
-            collection_dictionary.filter_extremes(no_below=no_below, no_above=no_above)
+            collection_dictionary.filter_extremes(no_below=1, no_above=no_above, keep_n=keep_n*2)
     # Final Filter words:
-    collection_dictionary.filter_extremes(no_below=no_below, no_above=no_above)
+    collection_dictionary.filter_extremes(no_below=no_below, no_above=no_above, keep_n=keep_n)
     # Save collection to file:
     collection_dictionary.save(str(outfile))
 
@@ -281,7 +301,7 @@ def convert_corpus_to_sparse_tfidf(
     # Save corpus and index to file:
     MmCorpus.serialize(str(vectorized_corpus_outpath), tfidf_corpus)
     # Convert Jsonlines to pickle bz2
-    convert_jsonl_to_pickle_bz(metadata_index_outpath)
+    # convert_jsonl_to_pickle_bz(metadata_index_outpath)
 
 
 def convert_jsonl_to_pickle_bz(jsonl_path: Path, delete_jsonl: bool = True):
@@ -299,14 +319,16 @@ def convert_jsonl_to_pickle_bz(jsonl_path: Path, delete_jsonl: bool = True):
     metadata_dict = {}
     # Open jsonlines and update dictionary:
     with jsonlines.open(jsonl_path) as reader:
-        for i, metadata_obj in enumerate(reader):
+        for i, metadata_obj in enumerate(tqdm(reader, desc=f"Building metadata {pkl_bz_outfile}"),):
             if i == 0:
                 metadata_dict = dict(metadata_obj)
             else:
                 metadata_dict = {**metadata_dict, **dict(metadata_obj)}
+    # TODO this stalls for large files above 4GB
     # Write pickle to compressed BZ2:
     with bz2.BZ2File(pkl_bz_outfile, "wb") as writer:
-        pickle.dump(metadata_dict, writer)
+        pickle.dump(metadata_dict, writer, pickle.HIGHEST_PROTOCOL)
+
     # Remove Jsonlines file
     if delete_jsonl:
         try:
@@ -329,7 +351,6 @@ def convert_indeces_to_tfidf(indeces_folder: Path = INDECES_FOLDER):
             vectorized_corpus_outpath=corpus_outpath,
             path_to_jsonl_index=index_path,
         )
-
 
 def convert_str_to_tfidf(
     input_str: str,

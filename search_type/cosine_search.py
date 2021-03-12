@@ -1,36 +1,63 @@
-import bz2
-from gensim.corpora.mmcorpus import MmCorpus
-from gensim.test.utils import get_tmpfile
-from gensim.similarities.docsim import Similarity
-from config import INDECES_FOLDER
-import pickle
-from index.tfidf_vectorizer import convert_str_to_tfidf
+import linecache
+from time import time
+from operator import itemgetter
 from pathlib import Path
 
+import gensim
+from gensim.corpora.mmcorpus import MmCorpus
+from gensim.test.utils import get_tmpfile
+from gensim.similarities.docsim import Similarity, SparseMatrixSimilarity
 
-def search_query_in_category(query: str, category: str, indeces_folder: Path = INDECES_FOLDER):
+from config import INDECES_FOLDER
+from index.tfidf_vectorizer import convert_str_to_tfidf
+
+
+def search_query_in_category(query: str, category: str, indeces_folder: Path = INDECES_FOLDER, top_k: int = 300, sparse_search: bool = True, ):
+    """
+    Searches query in a specific category of index.
+
+    Parameters
+    ----------
+    query: str
+        Query to search
+    category: str
+        Category to search in
+    indeces_folder: Path
+        Path to all indeces
+
+    """
     tfidf_query, bow_len = convert_str_to_tfidf(query)
     # Create temporary file for similarity index
-    index_tmpfile = get_tmpfile("index")
     # Load corpora for specific category
     category_corpus_path = indeces_folder / f"{category}_corpus.mm"
     corpus = MmCorpus(str(category_corpus_path))
-    # TODO: This could be saved to file and reloaded:
-    index = Similarity(index_tmpfile, corpus, num_features=bow_len)
-    # Cosine search
-    similarity_results = index[tfidf_query]
+
+    if sparse_search:
+        sparse_sim = SparseMatrixSimilarity(corpus, num_features=bow_len, num_best=top_k)
+        similarity_results = sparse_sim.get_similarities(tfidf_query)
+    else:
+        index_tmpfile = get_tmpfile("index")
+        index = Similarity(index_tmpfile, corpus, num_features=bow_len, num_best=top_k)
+        # Cosine search:
+        similarity_results = index[tfidf_query]
+    
+    #sorted_docid_results = similarity_results
     # Sort by most relevant:
-    sorted_docid_results = sorted(range(len(similarity_results)), key=lambda k: similarity_results[k], reverse=True)
-    # TODO: Indeces could be loaded in memory while search is going:
+    sorted_docid_results = sorted(range(len(similarity_results)), key=lambda k: similarity_results[k], reverse=True)[:top_k]
     # Import metadata
-    metadata_dict_path = indeces_folder / f"{category}_metadata.bz2"
-    with bz2.BZ2File(metadata_dict_path, "rb") as f:
-        metadata_dict = pickle.load(f)
+    # TODO: This can be preindexed:
+    index_path = indeces_folder / f"index_{category}.jsonl"
+    metadata = linecache.getlines(str(index_path))
+    print(itemgetter(*sorted_docid_results)(metadata))
 
-    print(metadata_dict[str(sorted_docid_results[0])])
-    print(metadata_dict[str(sorted_docid_results[1])])
-    print(metadata_dict[str(sorted_docid_results[2])])
-
+#def calculate_similarity_for_corpus_chunk(similarity_fn, corpus_cunk)
 
 if __name__ == '__main__':
-    search_query_in_category("nucleotide chromatin associated rna synthesis", "biochemistry")
+    #start = time()
+    #search_query_in_category("coronavirus", "virology", top_k = 10, sparse_search=False)
+    #end = time()
+    #print(end-start)
+    start = time()
+    search_query_in_category("coronavirus", "biochemistry", top_k=10, sparse_search=True)
+    end = time()
+    print(end-start)
