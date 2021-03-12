@@ -4,6 +4,7 @@ import typing as t
 import multiprocessing as mp
 from operator import itemgetter
 from pathlib import Path
+import copy
 
 import joblib
 from gensim.corpora.mmcorpus import MmCorpus
@@ -37,6 +38,9 @@ class SearchModule:
 
         _, categories_list = build_journal_category_dict()
         self.categories = sorted(categories_list)
+
+        self.classifier_categories = copy.copy(self.categories)
+        self.classifier_categories.remove("nutrition")                                       
         self.label_encoder = LabelEncoder()
         # Fit categories to label encoder
         self.label_encoder.fit(self.categories)
@@ -82,12 +86,13 @@ class SearchModule:
             query_category = self.classify_query(sparse2full(tfidf_query, length=self.num_features))
             pool_results = []
             pool = mp.Pool()
-            for curr_results in pool.starmap(self.search_category, query_category):
+            for curr_results in pool.imap(self.search_category, query_category):
                 pool_results.append(curr_results)
 
         return pool_results
 
-    def search_category(self, tfidf_query, category):
+    def search_category(self, tfidf_query_category):
+        tfidf_query, category = tfidf_query_category
         # Load corpora for specific category
         category_corpus_path = self.indeces_folder / f"{category}_corpus.mm"
         corpus = MmCorpus(str(category_corpus_path))
@@ -105,16 +110,11 @@ class SearchModule:
 
         return zip(sorted_docid_results, itemgetter(*sorted_docid_results)(metadata))
 
-    def classify_query(self, tfidf_query, top_cat: int = 5):
+    def classify_query(self, tfidf_query, top_cat: int = 4):
         query_scores = self.query_classifier.predict_proba(tfidf_query.reshape(1, -1))
-        sorted_query = sorted((self.categories, query_scores), key=lambda x: x[1])
+        sorted_query = sorted(zip(self.classifier_categories, query_scores[0]), key=lambda x: x[1], reverse=True)
         # Convert topn cat into numbers:
-        query_category = []
-        for cat, score in sorted_query[:top_cat]:
-            # Convert categories to txt:
-            cat_txt = self.label_encoder.inverse_transform(cat)
-            query_category.append(zip(tfidf_query, cat_txt))
-
+        query_category = [(tfidf_query, cat) for cat, score in sorted_query[:top_cat]]
         return query_category
 
 
