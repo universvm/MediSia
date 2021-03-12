@@ -20,6 +20,8 @@ BOW_PATH = SEARCH_UTILS_FOLDER / "bow.pkl.bz2"
 INDECES_FOLDER = DATA_FOLDER / "indeces"
 INDECES_FOLDER.mkdir(parents=True, exist_ok=True)
 BOW_LENGTH = 300000
+CLASSIFIERS_FOLDER = DATA_FOLDER / "classifiers"
+QUERY_CLASSIFIER = CLASSIFIERS_FOLDER / "MultinomialNB_model.joblib"
 # Cleaning regex:
 punctuation = re.compile(r'([%s])+' % re.escape(string.punctuation), re.UNICODE)
 html_tags = re.compile(r"<([^>]+)>", re.UNICODE)

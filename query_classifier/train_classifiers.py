@@ -116,7 +116,6 @@ class ModelTrainer:
         """
         # Get list of corpora files in index:
         mm_corpora_files = list(self.indeces_folder.glob(f"**/*.mm"))
-        # TODO FIXME:
         self.categories = [c.stem.split("_")[0] for c in mm_corpora_files]
         categories_to_corpus = {}
         # Double check categories:
