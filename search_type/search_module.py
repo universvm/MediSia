@@ -106,7 +106,7 @@ class SearchModule:
         return zip(sorted_docid_results, itemgetter(*sorted_docid_results)(metadata))
 
     def classify_query(self, tfidf_query, top_cat: int = 5):
-        query_scores = self.query_classifier.predict_proba(tfidf_query)
+        query_scores = self.query_classifier.predict_proba(tfidf_query.reshape(1, -1))
         sorted_query = sorted((self.categories, query_scores), key=lambda x: x[1])
         # Convert topn cat into numbers:
         query_category = []
