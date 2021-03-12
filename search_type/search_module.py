@@ -79,7 +79,7 @@ class SearchModule:
         # Do classification + multiprocessing
         else:
             # Classifyc query
-            query_category = self.classify_query(sparse2full(tfidf_query, length=self.bow_length))
+            query_category = self.classify_query(sparse2full(tfidf_query, length=self.num_features))
             pool_results = []
             pool = mp.Pool()
             for curr_results in pool.starmap(self.search_category, query_category):
