@@ -259,9 +259,6 @@ class ModelTrainer:
                 y_true=y_test, y_pred=y_predicted, average="macro"
             )
             test_recall = recall_score(y_true=y_test, y_pred=y_predicted, average="macro")
-            #test_auc = roc_auc_score(
-            #    y_true=y_test, y_score=y_score, average="macro", multi_class="ovr"
-            #)
             test_top2 = top_k_accuracy_score(
                 y_true=y_test, y_score=y_score, k=2, labels=np.unique(y_test)
             )
@@ -274,7 +271,6 @@ class ModelTrainer:
             metrics["top3"] = (metrics["top3"] + test_top3) / 2
             metrics["precision"] = (metrics["precision"]+ test_precision) /2
             metrics["recall"] = (metrics["recall"]+ test_recall) /2
-            #metrics["auc"] += test_auc
             metrics["time"] = (metrics["time"]+total_time) / 2
             print(metrics)
             # Delete to save space:
