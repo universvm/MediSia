@@ -21,6 +21,7 @@ class SearchModule:
         self,
         indeces_folder: Path = INDECES_FOLDER,
         classifier_path: Path = QUERY_CLASSIFIER,
+        num_features: int = BOW_LENGTH,
         top_k: int = 300,
         sparse_search: bool = True,
     ):
@@ -28,6 +29,7 @@ class SearchModule:
         self.classifier_path = classifier_path
         self.top_k = top_k
         self.sparse_search = sparse_search
+        self.num_features = num_features
 
         self.cat_to_cache_dict = self._load_jsonl_indeces()
         self.query_classifier = self._load_query_classifier()
@@ -46,10 +48,8 @@ class SearchModule:
         for cat_file in category_outpaths_list:
             # Extract Category:
             category = str(cat_file.stem).split("index_")[-1]
-            # Load index lines:
-            cat_cache = linecache.getlines(str(cat_file))
             # Create dictionary
-            cat_to_cache_dict[category] = cat_cache
+            cat_to_cache_dict[category] = cat_file
 
         return cat_to_cache_dict
 
@@ -91,7 +91,7 @@ class SearchModule:
         category_corpus_path = self.indeces_folder / f"{category}_corpus.mm"
         corpus = MmCorpus(str(category_corpus_path))
         sparse_sim = SparseMatrixSimilarity(
-            corpus, num_features=BOW_LENGTH, num_best=self.top_k
+            corpus, num_features=self.num_features, num_best=self.top_k
         )
         similarity_results = sparse_sim.get_similarities(tfidf_query)
         # Sort by most relevant:
@@ -100,8 +100,9 @@ class SearchModule:
             key=lambda k: similarity_results[k],
             reverse=True,
         )[:self.top_k]
+        metadata = linecache.getlines(str(self.cat_to_cache_dict[category]))
 
-        return zip(sorted_docid_results, itemgetter(*sorted_docid_results)(self.cat_to_cache_dict[category]))
+        return zip(sorted_docid_results, itemgetter(*sorted_docid_results)(metadata))
 
     def classify_query(self, tfidf_query, top_cat: int = 5):
         query_scores = self.query_classifier.predict_proba(tfidf_query)
