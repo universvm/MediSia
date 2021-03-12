@@ -8,6 +8,7 @@ from pathlib import Path
 import joblib
 from gensim.corpora.mmcorpus import MmCorpus
 from sklearn.preprocessing import LabelEncoder
+from gensim.matutils import sparse2full
 from gensim.similarities.docsim import Similarity, SparseMatrixSimilarity
 
 
@@ -78,7 +79,7 @@ class SearchModule:
         # Do classification + multiprocessing
         else:
             # Classifyc query
-            query_category = self.classify_query(tfidf_query)
+            query_category = self.classify_query(sparse2full(tfidf_query, length=self.bow_length))
             pool_results = []
             pool = mp.Pool()
             for curr_results in pool.starmap(self.search_category, query_category):
