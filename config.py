@@ -22,6 +22,7 @@ INDECES_FOLDER.mkdir(parents=True, exist_ok=True)
 BOW_LENGTH = 300000
 CLASSIFIERS_FOLDER = DATA_FOLDER / "classifiers"
 QUERY_CLASSIFIER = CLASSIFIERS_FOLDER / "MultinomialNB_model.joblib"
+# These shards were produced using the command split on linux
 MEDICINE_SHARDS = 6
 ALL_SHARDS = 15
 # Cleaning regex:

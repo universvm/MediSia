@@ -1,5 +1,6 @@
 import linecache
 import time
+import datetime
 import warnings
 import typing as t
 import multiprocessing as mp
@@ -8,12 +9,12 @@ from pathlib import Path
 import copy
 
 import joblib
+import json
 from gensim.corpora.mmcorpus import MmCorpus
 from sklearn.preprocessing import LabelEncoder
 from gensim.matutils import sparse2full
 from gensim.test.utils import get_tmpfile
 from gensim.similarities.docsim import Similarity, SparseMatrixSimilarity
-
 
 from config import (
     INDECES_FOLDER,
@@ -39,9 +40,10 @@ class SearchModule:
         num_features: int = BOW_LENGTH,
         medicine_shards: int = MEDICINE_SHARDS,
         all_shards: int = ALL_SHARDS,
-        top_k: int = 50,
-        query_cat: int = 5,
+        top_k: int = 3,
+        query_cat: int = 3,
         sparse_search: bool = True,
+        return_unique_jsonl: bool = False,
     ):
         self.indeces_folder = indeces_folder
         self.classifier_path = classifier_path
@@ -51,6 +53,7 @@ class SearchModule:
         self.query_cat = query_cat
         self.medicine_shards = medicine_shards
         self.all_shards = all_shards
+        self.return_unique_jsonl = return_unique_jsonl
 
         self.cat_to_cache_dict = self._load_jsonl_indeces()
         self.query_classifier = self._load_query_classifier()
@@ -102,7 +105,9 @@ class SearchModule:
             and (processed_category != "medicine")
             and (processed_category != "all")
         ):
-            pool_results = self.search_category((tfidf_query, processed_category))
+            curr_results = self.search_category((tfidf_query, processed_category))
+            # Extract results from tuple
+            sorted_score, sorted_results = curr_results
         # Do classification + multiprocessing
         else:
             if processed_category is None:
@@ -114,12 +119,25 @@ class SearchModule:
                 query_category = self.replace_cat_with_shards(
                     tfidf_query, processed_category
                 )
+
+            # Create empty lists for results
+            pool_score = []
             pool_results = []
+            # Initiate multiprocessing:
             pool = mp.Pool()
             for curr_results in pool.imap(self.search_category, query_category):
-                pool_results.append(curr_results)
+                # Extract results from tuple
+                score_results, docs_results = curr_results
+                # Merge results together:
+                pool_score += score_results
+                pool_results += docs_results
 
-        return pool_results
+            sorted_score, sorted_results = zip(*sorted(zip(pool_score, pool_results), key=lambda x: x[0]))
+
+        response = [json.loads(res) for res in sorted_results]
+        json_response = json.dumps(response)
+
+        return sorted_score, json_response
 
     def search_category(self, tfidf_query_category):
         tfidf_query, category = tfidf_query_category
@@ -141,15 +159,15 @@ class SearchModule:
             )
             # Cosine search:
             similarity_results = index[tfidf_query]
+        # Create range of docids
+        doc_ids = range(len(similarity_results))
         # Sort by most relevant:
-        sorted_docid_results = sorted(
-            range(len(similarity_results)),
-            key=lambda k: similarity_results[k],
-            reverse=True,
-        )[: self.top_k]
+        sorted_similarity_results, sorted_docid_results = zip(
+            *sorted(zip(similarity_results, doc_ids), key=lambda x: x[0])[:self.top_k])
+
         metadata = linecache.getlines(str(self.cat_to_cache_dict[category]))
 
-        return zip(sorted_docid_results, itemgetter(*sorted_docid_results)(metadata))
+        return (sorted_similarity_results, list(itemgetter(*sorted_docid_results)(metadata)))
 
     def classify_query(self, tfidf_query):
         full_tfidf_query = sparse2full(tfidf_query, length=self.num_features)
@@ -185,9 +203,69 @@ class SearchModule:
         return query_category
 
 
+class FollowUpSearch:
+    def __init__(self, json_response):
+        self.json_response = json.loads(json_response)
+        # Create indeces from json response:
+        self.docid_index, self.date_index, self.journal_index = self._create_indeces()
+
+    def _create_indeces(self):
+        docid_index = {}
+        date_index = {}
+        journal_index = {}
+
+        for i, json_obj in enumerate(self.json_response):
+            # Create general index:
+            docid_index[i] = json_obj
+            # Create date index:
+            year = json_obj["year"]
+            if year not in date_index.keys():
+                date_index[year] = []
+            date_index[year].append(i)
+            # Create journal index:
+            journal = json_obj["journal_name"]
+            if journal not in journal_index.keys():
+                journal_index[journal] = []
+            journal_index[journal].append(i)
+
+        return docid_index, date_index, journal_index
+
+    def search_date(self, start, end):
+        start = int(start)
+        if end is None:
+            x = datetime.datetime.now()
+            end = x.year
+        end = int(end)
+        range_date = list(range(start, end))
+        response = []
+        for date in range_date:
+            if date in self.date_index.keys():
+                curr_docids = self.date_index[date]
+                for docid in curr_docids:
+                    response.append(self.docid_index[int(docid)])
+
+        json_response = json.dumps(response)
+        return json_response
+
+    def search_journal(self, journal):
+        response = []
+        if journal in self.journal_index.keys():
+            curr_docids = self.journal_index[journal]
+            for docid in curr_docids:
+                response.append(self.docid_index[int(docid)])
+
+        json_response = json.dumps(response)
+        return json_response
+
+
 if __name__ == "__main__":
     search_module = SearchModule()
-    start = time.time()
-    results = search_module.search("coronavirus")
-    end = time.time()
-    print(end - start)
+    sorted_score, json_response = search_module.search("Hypoglycemia")
+    print(json_response)
+    followup_search = FollowUpSearch(json_response)
+    p = followup_search.search_date(2000, None)
+    print(p)
+    followup_search = FollowUpSearch(p)
+    p = followup_search.search_journal("Japanese Journal of Food Microbiology")
+    print(p)
+
