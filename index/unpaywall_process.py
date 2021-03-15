@@ -775,3 +775,7 @@ if __name__ == "__main__":
     #CategoryAnnotator(pool_all_categories=True)
     # Merge papers with abstract and category:
     #merge_abstract_no_abstract_jsonl()
+    # If categories are too large, use this linux command:
+    # split -l 900000 index_$CATEGORY_NAME.jsonl
+    # To split into shards of 900000 per document
+
