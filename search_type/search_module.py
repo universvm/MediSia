@@ -32,6 +32,7 @@ class SearchModule:
         classifier_path: Path = QUERY_CLASSIFIER,
         num_features: int = BOW_LENGTH,
         top_k: int = 50,
+        query_cat: int = 3,
         sparse_search: bool = True,
     ):
         self.indeces_folder = indeces_folder
@@ -39,6 +40,7 @@ class SearchModule:
         self.top_k = top_k
         self.sparse_search = sparse_search
         self.num_features = num_features
+        self.query_cat = query_cat
 
         self.cat_to_cache_dict = self._load_jsonl_indeces()
         self.query_classifier = self._load_query_classifier()
@@ -128,7 +130,7 @@ class SearchModule:
 
         return zip(sorted_docid_results, itemgetter(*sorted_docid_results)(metadata))
 
-    def classify_query(self, tfidf_query, top_cat: int = 4):
+    def classify_query(self, tfidf_query):
         full_tfidf_query = sparse2full(tfidf_query, length=self.num_features)
         query_scores = self.query_classifier.predict_proba(
             full_tfidf_query.reshape(1, -1)
@@ -139,7 +141,7 @@ class SearchModule:
             reverse=True,
         )
         # Convert topn cat into numbers:
-        query_category = [(tfidf_query, cat) for cat, score in sorted_query[:top_cat]]
+        query_category = [(tfidf_query, cat) for cat, score in sorted_query[:self.query_cat]]
         return query_category
 
 
