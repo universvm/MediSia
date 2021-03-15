@@ -24,7 +24,7 @@ class SearchModule:
         indeces_folder: Path = INDECES_FOLDER,
         classifier_path: Path = QUERY_CLASSIFIER,
         num_features: int = BOW_LENGTH,
-        top_k: int = 300,
+        top_k: int = 50,
         sparse_search: bool = True,
     ):
         self.indeces_folder = indeces_folder
@@ -79,11 +79,11 @@ class SearchModule:
 
         tfidf_query, bow_len = convert_str_to_tfidf(query)
         if processed_category:
-            pool_results = self.search_category(tfidf_query, processed_category)
+            pool_results = self.search_category((tfidf_query, processed_category))
         # Do classification + multiprocessing
         else:
             # Classifyc query
-            query_category = self.classify_query(sparse2full(tfidf_query, length=self.num_features))
+            query_category = self.classify_query(tfidf_query)
             pool_results = []
             pool = mp.Pool()
             for curr_results in pool.imap(self.search_category, query_category):
@@ -111,7 +111,8 @@ class SearchModule:
         return zip(sorted_docid_results, itemgetter(*sorted_docid_results)(metadata))
 
     def classify_query(self, tfidf_query, top_cat: int = 4):
-        query_scores = self.query_classifier.predict_proba(tfidf_query.reshape(1, -1))
+        full_tfidf_query = sparse2full(tfidf_query, length=self.num_features)
+        query_scores = self.query_classifier.predict_proba(full_tfidf_query.reshape(1, -1))
         sorted_query = sorted(zip(self.classifier_categories, query_scores[0]), key=lambda x: x[1], reverse=True)
         # Convert topn cat into numbers:
         query_category = [(tfidf_query, cat) for cat, score in sorted_query[:top_cat]]
@@ -121,3 +122,4 @@ class SearchModule:
 if __name__ == "__main__":
     search_module = SearchModule()
     results = search_module.search("coronavirus")
+    print(results)
