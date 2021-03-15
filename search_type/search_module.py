@@ -1,5 +1,4 @@
 import linecache
-import time
 import datetime
 import warnings
 import typing as t
@@ -188,7 +187,7 @@ class SearchModule:
                 pool_results += docs_results
             # Sort results by similarity score:
             sorted_score, sorted_results = zip(
-                *sorted(zip(pool_score, pool_results), key=lambda x: x[0])
+                *sorted(zip(pool_score, pool_results), key=lambda x: x[0], reverse=True)
             )
         # Create and return a json response:
         response = [json.loads(res) for res in sorted_results]
@@ -239,7 +238,9 @@ class SearchModule:
         doc_ids = range(len(similarity_results))
         # Sort by most relevant:
         sorted_similarity_results, sorted_docid_results = zip(
-            *sorted(zip(similarity_results, doc_ids), key=lambda x: x[0])[: self.top_k]
+            *sorted(zip(similarity_results, doc_ids), key=lambda x: x[0], reverse=True)[
+                : self.top_k
+            ]
         )
         # Load category index:
         metadata = linecache.getlines(str(self.cat_to_cache_dict[category]))
@@ -434,7 +435,7 @@ class FollowUpSearch:
 
 if __name__ == "__main__":
     search_module = SearchModule()
-    sorted_score, json_response = search_module.search("Hypoglycemia")
+    sorted_score, json_response = search_module.search("coronavirus")
     print(json_response)
     followup_search = FollowUpSearch(json_response)
     p = followup_search.search_date(2000, None)
