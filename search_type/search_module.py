@@ -102,7 +102,7 @@ class SearchModule:
                     # These medicine shards were produced using the command split on linux
                     query_category = [
                         (tfidf_query, f"medicine{i}")
-                        for i in range(self.medicine_shards)
+                        for i in range(1, self.medicine_shards+1)
                     ]
             pool_results = []
             pool = mp.Pool()
