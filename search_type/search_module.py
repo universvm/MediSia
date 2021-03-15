@@ -15,7 +15,7 @@ from gensim.test.utils import get_tmpfile
 from gensim.similarities.docsim import Similarity, SparseMatrixSimilarity
 
 
-from config import INDECES_FOLDER, QUERY_CLASSIFIER, BOW_LENGTH
+from config import INDECES_FOLDER, QUERY_CLASSIFIER, BOW_LENGTH, MEDICINE_SHARDS
 from index.tfidf_vectorizer import convert_str_to_tfidf
 from index.unpaywall_process import build_journal_category_dict
 
@@ -31,6 +31,7 @@ class SearchModule:
         indeces_folder: Path = INDECES_FOLDER,
         classifier_path: Path = QUERY_CLASSIFIER,
         num_features: int = BOW_LENGTH,
+        medicine_shards: int = MEDICINE_SHARDS,
         top_k: int = 50,
         query_cat: int = 3,
         sparse_search: bool = True,
@@ -41,6 +42,7 @@ class SearchModule:
         self.sparse_search = sparse_search
         self.num_features = num_features
         self.query_cat = query_cat
+        self.medicine_shards = medicine_shards
 
         self.cat_to_cache_dict = self._load_jsonl_indeces()
         self.query_classifier = self._load_query_classifier()
@@ -87,12 +89,21 @@ class SearchModule:
                 ), f"Category must be a str or None but got {type(category)}"
 
         tfidf_query, bow_len = convert_str_to_tfidf(query)
-        if processed_category:
+        if (processed_category) and (processed_category != "medicine"):
             pool_results = self.search_category((tfidf_query, processed_category))
         # Do classification + multiprocessing
         else:
-            # Classifyc query
-            query_category = self.classify_query(tfidf_query)
+            if processed_category is None:
+                # Classifyc query
+                query_category = self.classify_query(tfidf_query)
+            else:
+                # do multiprocessing for medicine:
+                if processed_category == "medicine":
+                    # These medicine shards were produced using the command split on linux
+                    query_category = [
+                        (tfidf_query, f"medicine{i}")
+                        for i in range(self.medicine_shards)
+                    ]
             pool_results = []
             pool = mp.Pool()
             for curr_results in pool.imap(self.search_category, query_category):
@@ -141,7 +152,9 @@ class SearchModule:
             reverse=True,
         )
         # Convert topn cat into numbers:
-        query_category = [(tfidf_query, cat) for cat, score in sorted_query[:self.query_cat]]
+        query_category = [
+            (tfidf_query, cat) for cat, score in sorted_query[: self.query_cat]
+        ]
         return query_category
 
 
