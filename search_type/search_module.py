@@ -15,7 +15,13 @@ from gensim.test.utils import get_tmpfile
 from gensim.similarities.docsim import Similarity, SparseMatrixSimilarity
 
 
-from config import INDECES_FOLDER, QUERY_CLASSIFIER, BOW_LENGTH, MEDICINE_SHARDS
+from config import (
+    INDECES_FOLDER,
+    QUERY_CLASSIFIER,
+    BOW_LENGTH,
+    MEDICINE_SHARDS,
+    ALL_SHARDS,
+)
 from index.tfidf_vectorizer import convert_str_to_tfidf
 from index.unpaywall_process import build_journal_category_dict
 
@@ -32,8 +38,9 @@ class SearchModule:
         classifier_path: Path = QUERY_CLASSIFIER,
         num_features: int = BOW_LENGTH,
         medicine_shards: int = MEDICINE_SHARDS,
+        all_shards: int = ALL_SHARDS,
         top_k: int = 50,
-        query_cat: int = 3,
+        query_cat: int = 5,
         sparse_search: bool = True,
     ):
         self.indeces_folder = indeces_folder
@@ -43,6 +50,7 @@ class SearchModule:
         self.num_features = num_features
         self.query_cat = query_cat
         self.medicine_shards = medicine_shards
+        self.all_shards = all_shards
 
         self.cat_to_cache_dict = self._load_jsonl_indeces()
         self.query_classifier = self._load_query_classifier()
@@ -89,21 +97,23 @@ class SearchModule:
                 ), f"Category must be a str or None but got {type(category)}"
 
         tfidf_query, bow_len = convert_str_to_tfidf(query)
-        if (processed_category) and (processed_category != "medicine"):
+        if (
+            (processed_category)
+            and (processed_category != "medicine")
+            and (processed_category != "all")
+        ):
             pool_results = self.search_category((tfidf_query, processed_category))
         # Do classification + multiprocessing
         else:
             if processed_category is None:
-                # Classifyc query
+                # Classify query
                 query_category = self.classify_query(tfidf_query)
+            # category is all or medicine:
             else:
-                # do multiprocessing for medicine:
-                if processed_category == "medicine":
-                    # These medicine shards were produced using the command split on linux
-                    query_category = [
-                        (tfidf_query, f"medicine{i}")
-                        for i in range(1, self.medicine_shards+1)
-                    ]
+                # Make categories like medicine and all into shards for multiprocessing
+                query_category = self.replace_cat_with_shards(
+                    tfidf_query, processed_category
+                )
             pool_results = []
             pool = mp.Pool()
             for curr_results in pool.imap(self.search_category, query_category):
@@ -152,9 +162,26 @@ class SearchModule:
             reverse=True,
         )
         # Convert topn cat into numbers:
-        query_category = [
-            (tfidf_query, cat) for cat, score in sorted_query[: self.query_cat]
-        ]
+        query_category = []
+        for cat, score in sorted_query[: self.query_cat]:
+            # make sure that large categories are sharded:
+            query_category += self.replace_cat_with_shards(tfidf_query, cat)
+
+        return query_category
+
+    def replace_cat_with_shards(self, tfidf_query, category):
+        if category == "medicine":
+            query_category = [
+                (tfidf_query, f"medicine{i}")
+                for i in range(1, self.medicine_shards + 1)
+            ]
+        elif category == "all":
+            query_category = [
+                (tfidf_query, f"all{i}") for i in range(1, self.all_shards + 1)
+            ]
+        else:
+            query_category = [(tfidf_query, category)]
+
         return query_category
 
 
