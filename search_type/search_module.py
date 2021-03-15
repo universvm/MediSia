@@ -43,8 +43,30 @@ class SearchModule:
         top_k: int = 3,
         query_cat: int = 3,
         sparse_search: bool = True,
-        return_unique_jsonl: bool = False,
     ):
+        """
+        Initialize search module.
+
+        Parameters
+        ----------
+        indeces_folder: Path
+            Path to indeces
+        classifier_path: Path
+            Path to classifier
+        num_features: int
+            Number of words in BOW
+        medicine_shards: int
+            Number of shards which split the medicine category
+        all_shards: int
+            Number of shards which split the all category
+        top_k: int
+            Number of results to be returned per category
+        query_cat: int
+            Number of categories to consider
+        sparse_search: bool
+            Whether to do sparse search (True) or not (False). Sparse search is faster.
+
+        """
         self.indeces_folder = indeces_folder
         self.classifier_path = classifier_path
         self.top_k = top_k
@@ -53,21 +75,32 @@ class SearchModule:
         self.query_cat = query_cat
         self.medicine_shards = medicine_shards
         self.all_shards = all_shards
-        self.return_unique_jsonl = return_unique_jsonl
 
+        # Load jsonlines category indeces:
         self.cat_to_cache_dict = self._load_jsonl_indeces()
+        # Load query classifier:
         self.query_classifier = self._load_query_classifier()
-
+        # Load category names:
         _, categories_list = build_journal_category_dict()
-        self.categories = sorted(categories_list)
 
+        self.categories = sorted(categories_list)
+        # Removing nutrition from classifier (nutrition only contains less than 1k articles):
         self.classifier_categories = copy.copy(self.categories)
         self.classifier_categories.remove("nutrition")
+        # Load label encoder:
         self.label_encoder = LabelEncoder()
         # Fit categories to label encoder
         self.label_encoder.fit(self.categories)
 
-    def _load_jsonl_indeces(self):
+    def _load_jsonl_indeces(self) -> dict:
+        """
+        Loads the jsonl indeces to dict.
+
+        Returns
+        -------
+        cat_to_cache_dict: dict
+            Dictionary {category: path_to_category_index}
+        """
         # Initialize dictionary:
         cat_to_cache_dict = dict()
         # Get all indeces file:
@@ -85,8 +118,29 @@ class SearchModule:
 
     def search(
         self, query, category: t.Union[str, None] = None, deep_search: bool = False
-    ):
+    ) -> (t.List[float], json.JSONEncoder):
+        """
+        Performs a basic search function through a corpus.
+
+        Parameters
+        ----------
+        query: str
+            Query to be searched
+        category: t.Union[str, None]
+            Category (str) or None if query should be classified for magic search
+        deep_search:
+            Whether to do a deep search through the whole index/
+
+        Returns
+        -------
+        sorted_score: t.List[float]
+            List of similarity scores for each of the documents
+        json_response: json.JSONEncoder
+            JSON response containing documents sorted by similarity
+
+        """
         processed_category = category
+        # If search through all indeces:
         if deep_search:
             if isinstance(category, str):
                 warnings.warn(
@@ -98,8 +152,9 @@ class SearchModule:
                 assert isinstance(
                     category, str
                 ), f"Category must be a str or None but got {type(category)}"
-
+        # Convert str to tfidf query:
         tfidf_query, bow_len = convert_str_to_tfidf(query)
+        # Search through classes (if they aren't all or medicine)
         if (
             (processed_category)
             and (processed_category != "medicine")
@@ -108,7 +163,7 @@ class SearchModule:
             curr_results = self.search_category((tfidf_query, processed_category))
             # Extract results from tuple
             sorted_score, sorted_results = curr_results
-        # Do classification + multiprocessing
+        # Do classification to search + multiprocessing through category indeces
         else:
             if processed_category is None:
                 # Classify query
@@ -126,20 +181,41 @@ class SearchModule:
             # Initiate multiprocessing:
             pool = mp.Pool()
             for curr_results in pool.imap(self.search_category, query_category):
-                # Extract results from tuple
+                # Extract results from tuple:
                 score_results, docs_results = curr_results
                 # Merge results together:
                 pool_score += score_results
                 pool_results += docs_results
-
-            sorted_score, sorted_results = zip(*sorted(zip(pool_score, pool_results), key=lambda x: x[0]))
-
+            # Sort results by similarity score:
+            sorted_score, sorted_results = zip(
+                *sorted(zip(pool_score, pool_results), key=lambda x: x[0])
+            )
+        # Create and return a json response:
         response = [json.loads(res) for res in sorted_results]
         json_response = json.dumps(response)
 
         return sorted_score, json_response
 
-    def search_category(self, tfidf_query_category):
+    def search_category(
+        self, tfidf_query_category: tuple
+    ) -> (t.List[float], t.List[str]):
+        """
+        Searches through a category
+
+        Parameters
+        ----------
+        tfidf_query_category: tuple
+            tfidf_query and category tuple
+
+        Returns
+        -------
+        sorted_similarity_results: t.List[float]
+            List of float sorted by largest similarity to smallest
+        sorted_corpora: t.List[str]
+            List of str of JSONL documents
+
+        """
+        # Unpack input data:
         tfidf_query, category = tfidf_query_category
         # Load corpora for specific category
         category_corpus_path = self.indeces_folder / f"{category}_corpus.mm"
@@ -163,23 +239,44 @@ class SearchModule:
         doc_ids = range(len(similarity_results))
         # Sort by most relevant:
         sorted_similarity_results, sorted_docid_results = zip(
-            *sorted(zip(similarity_results, doc_ids), key=lambda x: x[0])[:self.top_k])
-
+            *sorted(zip(similarity_results, doc_ids), key=lambda x: x[0])[: self.top_k]
+        )
+        # Load category index:
         metadata = linecache.getlines(str(self.cat_to_cache_dict[category]))
 
-        return (sorted_similarity_results, list(itemgetter(*sorted_docid_results)(metadata)))
+        return (
+            sorted_similarity_results,
+            list(itemgetter(*sorted_docid_results)(metadata)),
+        )
 
-    def classify_query(self, tfidf_query):
+    def classify_query(self, tfidf_query) -> t.List[tuple]:
+        """
+        Uses a classifier to classify a query into 1 of 26 categories. Used for magic search.
+
+        Parameters
+        ----------
+        tfidf_query: list
+            Tfidf query
+
+        Returns
+        -------
+        query_category: t.List[tuple]
+            List of [(query, tuple), (query, tuple)]
+
+        """
+        # Unsparse query for classifier:
         full_tfidf_query = sparse2full(tfidf_query, length=self.num_features)
+        # Classify query:
         query_scores = self.query_classifier.predict_proba(
             full_tfidf_query.reshape(1, -1)
         )
+        # Sort query by most probable:
         sorted_query = sorted(
             zip(self.classifier_categories, query_scores[0]),
             key=lambda x: x[1],
             reverse=True,
         )
-        # Convert topn cat into numbers:
+        # Convert topn categories into numbers:
         query_category = []
         for cat, score in sorted_query[: self.query_cat]:
             # make sure that large categories are sharded:
@@ -187,7 +284,22 @@ class SearchModule:
 
         return query_category
 
-    def replace_cat_with_shards(self, tfidf_query, category):
+    def replace_cat_with_shards(self, tfidf_query, category) -> t.List[tuple]:
+        """
+        Splits categories of all and medicine into shards for faster processing.
+
+        Parameters
+        ----------
+        tfidf_query: list
+            Tfidf query
+        category: str
+            Category str
+
+        Returns
+        -------
+        query_category: t.List[tuple]
+            List [(tfidf_query, category)]
+        """
         if category == "medicine":
             query_category = [
                 (tfidf_query, f"medicine{i}")
@@ -205,11 +317,32 @@ class SearchModule:
 
 class FollowUpSearch:
     def __init__(self, json_response):
+        """
+        Initializes Follow Up Search
+
+        Parameters
+        ----------
+        json_response: json.JSONEncoder
+            Json response
+        """
         self.json_response = json.loads(json_response)
         # Create indeces from json response:
         self.docid_index, self.date_index, self.journal_index = self._create_indeces()
 
-    def _create_indeces(self):
+    def _create_indeces(self) -> (dict, dict, dict):
+        """
+        Creates indeces of docid, date and journal.
+
+        Returns
+        -------
+        docid_index: dict
+            {docid: json_doc}
+        date_index: dict
+            {date: docid}
+        journal_index: dict
+            {journal: docid}
+        """
+        # Initialize empty indeces:
         docid_index = {}
         date_index = {}
         journal_index = {}
@@ -230,31 +363,72 @@ class FollowUpSearch:
 
         return docid_index, date_index, journal_index
 
-    def search_date(self, start, end):
+    def search_date(self, start: int, end: t.Union[int, None]) -> json.JSONEncoder:
+        """
+        Searches json for range of date
+
+        Parameters
+        ----------
+        start: int
+            Start date
+        end: int or None
+            End date. If None, today's year is used
+
+        Returns
+        -------
+        json_response: json.JSONEncoder
+            Json response
+
+        """
+        # Load start and end date:
         start = int(start)
         if end is None:
             x = datetime.datetime.now()
             end = x.year
         end = int(end)
-        range_date = list(range(start, end))
+        # Create a range of dates:
+        range_date = list(range(start, end + 1))
+        # Initilize Response
         response = []
         for date in range_date:
+            # If date is in index:
             if date in self.date_index.keys():
+                # Load DocIDs:
                 curr_docids = self.date_index[date]
+                # Save JSON of DocIDs:
                 for docid in curr_docids:
                     response.append(self.docid_index[int(docid)])
-
+        # Save to JSON response
         json_response = json.dumps(response)
+
         return json_response
 
-    def search_journal(self, journal):
+    def search_journal(self, journal: str) -> json.JSONEncoder:
+        """
+        Searches through journals. The journal input must be precise, an error will be returned if a journal does not exist.
+
+        Parameters
+        ----------
+        journal: str
+            Name of journal
+
+        Returns
+        -------
+        json_response: json.JSONEncoder
+            Json response
+
+        """
         response = []
+        # If journal is in index:
         if journal in self.journal_index.keys():
+            # Load DocIDs:
             curr_docids = self.journal_index[journal]
+            # Save JSON of DocIDs:
             for docid in curr_docids:
                 response.append(self.docid_index[int(docid)])
-
+        # Save to JSON response
         json_response = json.dumps(response)
+
         return json_response
 
 
@@ -268,4 +442,3 @@ if __name__ == "__main__":
     followup_search = FollowUpSearch(p)
     p = followup_search.search_journal("Japanese Journal of Food Microbiology")
     print(p)
-
