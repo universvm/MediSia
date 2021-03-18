@@ -83,9 +83,9 @@ class SearchModule:
         _, categories_list = build_journal_category_dict()
 
         self.categories = sorted(categories_list)
-        # Removing nutrition from classifier (nutrition only contains less than 1k articles):
+        # Removing nutrition from classifier (immunology only contains less than 1k articles):
         self.classifier_categories = copy.copy(self.categories)
-        self.classifier_categories.remove("nutrition")
+        self.classifier_categories.remove("immunology")
         # Load label encoder:
         self.label_encoder = LabelEncoder()
         # Fit categories to label encoder
