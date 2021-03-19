@@ -404,14 +404,14 @@ class FollowUpSearch:
 
         return json_response
 
-    def search_journal(self, journal: str) -> json.JSONEncoder:
+    def search_journal(self, journals: t.List[str]) -> json.JSONEncoder:
         """
         Searches through journals. The journal input must be precise, an error will be returned if a journal does not exist.
 
         Parameters
         ----------
-        journal: str
-            Name of journal
+        journal: t.List[str]
+            List of names of journals
 
         Returns
         -------
@@ -420,17 +420,28 @@ class FollowUpSearch:
 
         """
         response = []
-        # If journal is in index:
-        if journal in self.journal_index.keys():
-            # Load DocIDs:
-            curr_docids = self.journal_index[journal]
-            # Save JSON of DocIDs:
-            for docid in curr_docids:
-                response.append(self.docid_index[int(docid)])
+        docs_in_response_set = set()
+        for journal in journals:
+            # If journal is in index:
+            if journal in self.journal_index.keys():
+                # Load DocIDs:
+                curr_docids = self.journal_index[journal]
+                # Save JSON of DocIDs:
+                for docid in curr_docids:
+                    # if document is already in the response, ignore it
+                    if int(docid) in docs_in_response_set:
+                        continue
+                    else:
+                        # add document to response
+                        docs_in_response_set.add(int(docid))
+                        response.append(self.docid_index[int(docid)])
         # Save to JSON response
         json_response = json.dumps(response)
 
         return json_response
+
+    def return_indeces(self):
+        return list(self.date_index.keys()), list(self.journal_index.keys())
 
 
 if __name__ == "__main__":
@@ -438,8 +449,10 @@ if __name__ == "__main__":
     sorted_score, json_response = search_module.search("coronavirus")
     print(json_response)
     followup_search = FollowUpSearch(json_response)
-    p = followup_search.search_date(2000, None)
+    # Return list of dates and journals for the front end:
+    date_list, journals_list = followup_search.return_indeces()
+    p = followup_search.search_journal(["Applied Psychophysiology and Biofeedback"])
     print(p)
     followup_search = FollowUpSearch(p)
-    p = followup_search.search_journal("Japanese Journal of Food Microbiology")
+    p = followup_search.search_date(2000, None)
     print(p)
