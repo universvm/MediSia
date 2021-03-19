@@ -39,7 +39,7 @@ class SearchModule:
         num_features: int = BOW_LENGTH,
         medicine_shards: int = MEDICINE_SHARDS,
         all_shards: int = ALL_SHARDS,
-        top_k: int = 3,
+        top_k: int = 20,
         query_cat: int = 3,
         sparse_search: bool = True,
     ):
@@ -141,54 +141,47 @@ class SearchModule:
         processed_category = category
         # If search through all indeces:
         if deep_search:
-            if isinstance(category, str):
+            if isinstance(category, list):
                 warnings.warn(
                     "Deep Search was True but category was given. Will be performing Deep Search."
                 )
             elif category is None:
-                processed_category = "all"
+                processed_category = ["all"]
             else:
                 assert isinstance(
-                    category, str
-                ), f"Category must be a str or None but got {type(category)}"
+                    category, list
+                ), f"Category must be a list or None but got {type(category)}"
         # Convert str to tfidf query:
         tfidf_query, bow_len = convert_str_to_tfidf(query)
-        # Search through classes (if they aren't all or medicine)
-        if (
-            (processed_category)
-            and (processed_category != "medicine")
-            and (processed_category != "all")
-        ):
-            curr_results = self.search_category((tfidf_query, processed_category))
-            # Extract results from tuple
-            sorted_score, sorted_results = curr_results
-        # Do classification to search + multiprocessing through category indeces
-        else:
-            if processed_category is None:
-                # Classify query
-                query_category = self.classify_query(tfidf_query)
-            # category is all or medicine:
-            else:
-                # Make categories like medicine and all into shards for multiprocessing
-                query_category = self.replace_cat_with_shards(
-                    tfidf_query, processed_category
-                )
 
-            # Create empty lists for results
-            pool_score = []
-            pool_results = []
-            # Initiate multiprocessing:
-            pool = mp.Pool()
-            for curr_results in pool.imap(self.search_category, query_category):
-                # Extract results from tuple:
-                score_results, docs_results = curr_results
-                # Merge results together:
-                pool_score += score_results
-                pool_results += docs_results
-            # Sort results by similarity score:
-            sorted_score, sorted_results = zip(
-                *sorted(zip(pool_score, pool_results), key=lambda x: x[0], reverse=True)
-            )
+        # Do classification to search + multiprocessing through category indeces
+
+        if processed_category is None:
+            # Classify query
+            query_category = self.classify_query(tfidf_query)
+        # category is all or medicine:
+        else:
+            # Merge categories and queries for multiprocessing
+            # Also, make categories like medicine and all into shards
+            query_category = []
+            for cat in processed_category:
+                query_category += self.replace_cat_with_shards(tfidf_query, cat)
+
+        # Create empty lists for results
+        pool_score = []
+        pool_results = []
+        # Initiate multiprocessing:
+        pool = mp.Pool()
+        for curr_results in pool.imap(self.search_category, query_category):
+            # Extract results from tuple:
+            score_results, docs_results = curr_results
+            # Merge results together:
+            pool_score += score_results
+            pool_results += docs_results
+        # Sort results by similarity score:
+        sorted_score, sorted_results = zip(
+            *sorted(zip(pool_score, pool_results), key=lambda x: x[0], reverse=True)
+        )
         # Create and return a json response:
         response = [json.loads(res) for res in sorted_results]
         json_response = json.dumps(response)
@@ -262,7 +255,7 @@ class SearchModule:
         Returns
         -------
         query_category: t.List[tuple]
-            List of [(query, tuple), (query, tuple)]
+            List of [(tfidf_query, category), (tfidf_query, category)]
 
         """
         # Unsparse query for classifier:
@@ -332,7 +325,9 @@ class FollowUpSearch:
 
     def _create_indeces(self) -> (dict, dict, dict):
         """
-        Creates indeces of docid, date and journal.
+        Creates indeces of docid, date and journal. Because the json response
+        is ranked by most relevant, the index is also ordered by most relevant
+        hence why it is not necessary to do the sorting again.
 
         Returns
         -------
@@ -445,13 +440,18 @@ class FollowUpSearch:
 
 
 if __name__ == "__main__":
+    # 1. Magic Search
     search_module = SearchModule()
     sorted_score, json_response = search_module.search("coronavirus")
+    # 2. Category Search
+    print(json_response)
+    sorted_score, json_response = search_module.search("coronavirus", category=["biochemistry", "bioengineering"])
     print(json_response)
     followup_search = FollowUpSearch(json_response)
     # Return list of dates and journals for the front end:
     date_list, journals_list = followup_search.return_indeces()
-    p = followup_search.search_journal(["Applied Psychophysiology and Biofeedback"])
+    # 3. Follow up search
+    p = followup_search.search_journal(["Journal of Industrial Microbiology & Biotechnology"])
     print(p)
     followup_search = FollowUpSearch(p)
     p = followup_search.search_date(2000, None)
