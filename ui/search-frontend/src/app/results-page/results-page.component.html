@@ -1,1 +1,21 @@
-<p>results-page works!</p>
+<div *ngIf="results" class="content">
+    <div *ngFor="let paper of results.results">
+        <br />
+        <a class="title" href="{{paper.url}}"><b>{{ paper.title }}</b></a>
+        <br />
+        <div class="sources">
+            <div class="authors"> 
+                <div *ngFor="let author of paper.authors, let i = index">
+                    <div *ngIf="i == 0">
+                        {{ author }}
+                    </div>
+                    <div *ngIf="i >= 1">
+                        , {{ author }}
+                    </div>
+                </div>
+            </div>
+            {{ paper.journal }}, {{ paper.pubyear }}
+        </div>
+        {{ paper.abstract }}
+    </div>
+</div>

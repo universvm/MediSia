@@ -1,0 +1,101 @@
+  .header {
+    //padding: 10px;
+    background-color: rgba(62, 163, 218, 0.2);
+  }
+  
+  .container {
+    //width: 80%;
+    //max-width: 960px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    margin: 0 auto;
+    margin-left: 2.5%;
+    margin-right: 2.5%;
+  }
+  
+  .footer {
+    margin-top: 10px;
+    white-space: normal;
+    height: fit-content;
+    background-color: rgba(62, 163, 218, 0.2);
+  }
+  
+  .header,
+  .footer {
+    width: 100%;
+  }
+  
+  .footer-text {
+    text-align: center;
+    font-size: 13px;
+    padding: 8px;
+  }
+  
+  .footer-text > p {
+    margin-bottom: 0;
+  }
+  
+  .title {
+    vertical-align: middle;
+    display: inline;
+    font-family: "Google Sans", Roboto, Arial, sans-serif;
+  }
+  
+  span {
+    height: 100%;
+  }
+  
+  .left-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+  
+  .site {
+    height: 100%;
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  a {
+    margin-right: 10px;
+  }
+  
+  .welcome-modal {
+    border-radius: 1px;
+    border-color: black;
+  }
+  
+  .new {
+    font-size: 17px;
+    margin-left: 12px;
+  }
+  
+  .banner-content {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .new:hover {
+    cursor: pointer;
+  }
+  
+  .banner {
+    padding: 0px;
+  }
+  
+  .matrix-title {
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .nowrap {
+    white-space: nowrap;
+  }
+
+  .img {
+    height: 30px;
+  }

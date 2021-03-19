@@ -1,0 +1,44 @@
+{
+  "topics": ["Covid", "Pandemic"],
+  "authors": ["Betty Pfefferbaum", "Carol S. North"],
+  "journals": ["New England Journal of Medicine", "Example Journal"],
+  "pubyears": [2020, 2019],
+  "results": [
+    {
+      "title": "Mental Health and the Covid-19 Pandemic",
+      "abstract": "Uncertain prognoses, looming severe shortages of resources for testing and treatment and for protecting responders and health care providers from infection, imposition of unfamiliar public health measures that infringe on personal freedoms, large and growing financial losses, and conflicting messages from authorities are among the major stressors that undoubtedly will contribute to widespread emotional distress and increased risk for psychiatric illness associated with Covid-19. Health care providers have an important role in addressing these emotional outcomes as part of the pandemic response.",
+      "authors": ["Betty Pfefferbaum", "Carol S. North"],
+      "pubyear": 2020,
+      "journal": "New England Journal of Medicine",
+      "url": "https://www.nejm.org/doi/full/10.1056/NEJMp2008017",
+      "topic": "Covid-19"
+    },
+    {
+      "title": "Mental Health and the Covid-19 Pandemic",
+      "abstract": "Uncertain prognoses, looming severe shortages of resources for testing and treatment and for protecting responders and health care providers from infection, imposition of unfamiliar public health measures that infringe on personal freedoms, large and growing financial losses, and conflicting messages from authorities are among the major stressors that undoubtedly will contribute to widespread emotional distress and increased risk for psychiatric illness associated with Covid-19. Health care providers have an important role in addressing these emotional outcomes as part of the pandemic response.",
+      "authors": ["Betty Pfefferbaum", "Carol S. North"],
+      "pubyear": 2020,
+      "journal": "New England Journal of Medicine",
+      "url": "https://www.nejm.org/doi/full/10.1056/NEJMp2008017",
+      "topic": "Covid-19"
+    },
+    {
+      "title": "Mental Health and the Covid-19 Pandemic",
+      "abstract": "Uncertain prognoses, looming severe shortages of resources for testing and treatment and for protecting responders and health care providers from infection, imposition of unfamiliar public health measures that infringe on personal freedoms, large and growing financial losses, and conflicting messages from authorities are among the major stressors that undoubtedly will contribute to widespread emotional distress and increased risk for psychiatric illness associated with Covid-19. Health care providers have an important role in addressing these emotional outcomes as part of the pandemic response.",
+      "authors": ["Betty Pfefferbaum", "Carol S. North"],
+      "pubyear": 2020,
+      "journal": "New England Journal of Medicine",
+      "url": "https://www.nejm.org/doi/full/10.1056/NEJMp2008017",
+      "topic": "Covid-19"
+    },
+    {
+      "title": "Mental Health and the Covid-19 Pandemic",
+      "abstract": "Uncertain prognoses, looming severe shortages of resources for testing and treatment and for protecting responders and health care providers from infection, imposition of unfamiliar public health measures that infringe on personal freedoms, large and growing financial losses, and conflicting messages from authorities are among the major stressors that undoubtedly will contribute to widespread emotional distress and increased risk for psychiatric illness associated with Covid-19. Health care providers have an important role in addressing these emotional outcomes as part of the pandemic response.",
+      "authors": ["Betty Pfefferbaum", "Carol S. North"],
+      "pubyear": 2020,
+      "journal": "New England Journal of Medicine",
+      "url": "https://www.nejm.org/doi/full/10.1056/NEJMp2008017",
+      "topic": "Covid-19"
+    }
+  ]
+}

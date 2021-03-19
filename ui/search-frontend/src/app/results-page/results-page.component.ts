@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import testdata from '../../assets/testdata.json';
+import { Results, Paper } from './results.types';
 
 @Component({
   selector: 'app-results-page',
@@ -6,10 +8,12 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./results-page.component.scss']
 })
 export class ResultsPageComponent implements OnInit {
+  results: Results | null;
 
-  constructor() { }
-
-  ngOnInit(): void {
+  constructor() {
+    this.results = new Results(testdata);
   }
+
+  ngOnInit(): void {}
 
 }

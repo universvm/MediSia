@@ -1,1 +1,53 @@
-<p>search-page works!</p>
+<div class="container">
+    <mat-card class="mat-elevation-z8 search-form">
+        <mat-card-title class="title">
+            Search for scientific papers
+        </mat-card-title>
+        <mat-card-content>
+            <form class="searchForm" margin="5" [formGroup]="searchForm" (ngSubmit)="onSubmit()">
+                <mat-form-field class="form-entry">
+                    <mat-label>search query</mat-label>
+                        <input formControlName="query" matInput placeholder="Enter search query">
+                    <mat-error>
+                        Please enter a valid query
+                    </mat-error>
+                </mat-form-field>
+                <div *ngIf="isAdvanced" class="searchForm" margin="5">
+                    <mat-form-field class="form-entry">
+                        <mat-label>author</mat-label>
+                            <input formControlName="author" matInput placeholder="Enter author">
+                        <mat-error>
+                            Please enter a valid query
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="form-entry">
+                        <mat-label>journal</mat-label>
+                            <input formControlName="journal" matInput placeholder="Enter journal name">
+                        <mat-error>
+                            Please enter a valid query
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="form-entry">
+                        <mat-label>publication year</mat-label>
+                            <input formControlName="pubyear" matInput placeholder="Enter publication year">
+                        <mat-error>
+                            Please enter a valid year or range of years, e.g. 2019, 2010-2012
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                <div class="toggle" margin="5">
+                    <mat-slide-toggle formControlName="deepSearch">Deep search</mat-slide-toggle>
+                </div>
+                <div class="search-button-container">
+                    <button class="advanced-button" mat-stroked-button color="primary" type="button" (click)="onAdvanced()">
+                        {{isAdvanced ? 'Clear advanced search' : 'Advanced search'}}
+                    </button>
+                    <button class="search-button" mat-raised-button color="primary" type="submit" value="Search"
+                        [disabled]="searchForm.invalid">
+                        <mat-icon>search</mat-icon> Search
+                    </button>
+                </div>
+            </form>
+        </mat-card-content>
+    </mat-card>
+</div>

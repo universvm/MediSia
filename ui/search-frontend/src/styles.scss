@@ -2,3 +2,128 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+  a {
+    color: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  
+  @media print {
+    .matrix-never-print { display: none; }
+  }
+  
+  @media not print {
+    .matrix-only-print { display: none; }
+  }
+  
+  .inline {
+    display: inline-block;
+    border: 0;
+    /* By default, every line should collapse to its minimum size. */
+    line-height: 1;
+    padding: 0;
+  }
+  
+  .noWrap {
+    white-space: nowrap;
+  }
+  
+  html,
+  body {
+    height: 100%;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+    margin: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    min-width: 600px;
+  }
+  
+  h1,
+  h2,
+  .mat-card-title,
+  .mat-button-wrapper,
+  .mat-tab-label-content,
+  .matrix-title {
+    font-family: "Google Sans", Roboto, Arial, sans-serif;
+    font-weight: 500 !important;
+  }
+  
+  router-outlet + * {
+    flex: 1;
+    //width: 80%;
+    max-width: 1500px;
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    overflow-y: scroll;
+  }
+  
+  matrix-itinerary-page,
+  matrix-flights-page,
+  matrix-calendar-page {
+    min-width: 900px;
+  }
+  
+  matrix-itinerary-page {
+    max-width: 1200px;
+  }
+  
+  .row-element.origin-destination > div {
+    width: 100%;
+    margin-top: auto;
+  }
+  
+  mat-row:last-child {
+    border-bottom-width: 0px;
+  }
+  
+  .mat-card:nth-child(1),
+  .mat-card:nth-child(2) {
+    border-radius: 10px;
+  }
+  
+  .mat-card > mat-card-title {
+    font-family: "Google Sans", Roboto, Arial, sans-serif;
+  }
+  
+  mat-tab-group {
+    margin-left: 46px;
+    margin-right: 46px;
+  }
+  
+  .mat-tab-body.mat-tab-body-active,
+  .mat-tab-body-content {
+    overflow: hidden;
+  }
+  
+  #mat-tab-content-1-1 > div {
+    overflow: hidden;
+  }
+  
+  .mat-tooltip {
+    font-size: 90% !important;
+    max-width: unset !important;
+  }
+  
+  .page-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .page-header > h2.page-header-text {
+    font-family: "Google Sans", Roboto, Arial, sans-serif;
+    font-size: 25px;
+    align-self: center;
+    margin-left: 24px;
+  }
+  
+  .mat-stepper-horizontal, .mat-stepper-vertical, .mat-list-item-disabled {
+    background-color: inherit;
+  }
