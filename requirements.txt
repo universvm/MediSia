@@ -42,7 +42,7 @@ humanfriendly==9.1
 idna @ file:///home/linux1/recipes/ci/idna_1610986105248/work
 imagesize==1.2.0
 iniconfig==1.1.1
-Jinja2==2.11.2
+Jinja2==2.11.3
 jmespath @ file:///tmp/build/80754af9/jmespath_1594304593830/work
 joblib @ file:///tmp/build/80754af9/joblib_1613502643832/work
 jsonlines @ file:///tmp/build/80754af9/jsonlines_1609785323125/work
