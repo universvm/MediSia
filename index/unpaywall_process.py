@@ -3,6 +3,7 @@ import multiprocessing as mp
 import pickle
 import re
 import requests
+import urllib.request, json
 import typing as t
 import urllib.request, json
 from io import StringIO, BytesIO
@@ -617,7 +618,7 @@ class CategoryAnnotator:
                         print(f"Analysed {self.count} papers.")
                 else:
                     continue
-                    
+
         print(f"Finished {paper_to_open}.")
         return category_to_file_dict
 
@@ -732,8 +733,8 @@ def merge_abstract_no_abstract_jsonl(
                 shutil.copyfileobj(fd, wfd)
                 # add new line at the end of the file
                 wfd.write(b"\n")
-                
-                
+
+
 def merge_indeces_jsonl(
     indeces_folder: Path = INDECES_FOLDER,
 ):
@@ -775,3 +776,7 @@ if __name__ == "__main__":
     #CategoryAnnotator(pool_all_categories=True)
     # Merge papers with abstract and category:
     #merge_abstract_no_abstract_jsonl()
+    # If categories are too large, use this linux command:
+    # split -l 900000 index_$CATEGORY_NAME.jsonl
+    # To split into shards of 900000 per document
+
