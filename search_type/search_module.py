@@ -117,7 +117,7 @@ class SearchModule:
 
     def search(
         self, query, category: t.Union[str, None] = None, deep_search: bool = False
-    ) -> (t.List[float], json.JSONEncoder):
+    ) -> (t.List[float], t.List[dict]):
         """
         Performs a basic search function through a corpus.
 
@@ -184,9 +184,8 @@ class SearchModule:
         )
         # Create and return a json response:
         response = [json.loads(res) for res in sorted_results]
-        json_response = json.dumps(response)
 
-        return sorted_score, json_response
+        return sorted_score, response
 
     def search_category(
         self, tfidf_query_category: tuple
@@ -316,10 +315,10 @@ class FollowUpSearch:
 
         Parameters
         ----------
-        json_response: json.JSONEncoder
+        json_response: t.List[dict]
             Json response
         """
-        self.json_response = json.loads(json_response)
+        self.json_response = json_response
         # Create indeces from json response:
         self.docid_index, self.date_index, self.journal_index = self._create_indeces()
 
@@ -359,7 +358,7 @@ class FollowUpSearch:
 
         return docid_index, date_index, journal_index
 
-    def search_date(self, start: int, end: t.Union[int, None]) -> json.JSONEncoder:
+    def search_date(self, start: int, end: t.Union[int, None]) -> t.List[dict]:
         """
         Searches json for range of date
 
@@ -372,7 +371,7 @@ class FollowUpSearch:
 
         Returns
         -------
-        json_response: json.JSONEncoder
+        json_response: t.List[dict]
             Json response
 
         """
@@ -394,12 +393,10 @@ class FollowUpSearch:
                 # Save JSON of DocIDs:
                 for docid in curr_docids:
                     response.append(self.docid_index[int(docid)])
-        # Save to JSON response
-        json_response = json.dumps(response)
 
-        return json_response
+        return response
 
-    def search_journal(self, journals: t.List[str]) -> json.JSONEncoder:
+    def search_journal(self, journals: t.List[str]) -> t.List[dict]:
         """
         Searches through journals. The journal input must be precise, an error will be returned if a journal does not exist.
 
@@ -410,7 +407,7 @@ class FollowUpSearch:
 
         Returns
         -------
-        json_response: json.JSONEncoder
+        response: t.List[dict]
             Json response
 
         """
@@ -430,10 +427,8 @@ class FollowUpSearch:
                         # add document to response
                         docs_in_response_set.add(int(docid))
                         response.append(self.docid_index[int(docid)])
-        # Save to JSON response
-        json_response = json.dumps(response)
 
-        return json_response
+        return response
 
     def return_indeces(self):
         return list(self.date_index.keys()), list(self.journal_index.keys())
