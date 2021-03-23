@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>Preferred Journals</h2>
+<mat-selection-list mat-dialog-content
+  (selectionChange)="onSelChange($event)">
+  <mat-list-option *ngFor="let journal of journals" checkboxPosition="before"
+    [selected]="includedJournals?.includes(journal)" [value]="journal">
+    <div class="container">
+      <span class="short-name" style="font-weight: bold;">{{ journal }}</span>
+    </div>
+  </mat-list-option>
+</mat-selection-list>
+<div>If the journal you wish to filter by is not in this list, please return to the search page and enter it directly.</div>
+<mat-dialog-actions class="buttons">
+  <button mat-button mat-dialog-close color="primary" (click)="cancelFilters()">Cancel</button>
+  <button mat-button mat-dialog-close color="primary" (click)="applyFilters()">Apply</button>
+</mat-dialog-actions>

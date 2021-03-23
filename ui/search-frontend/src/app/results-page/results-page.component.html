@@ -1,8 +1,24 @@
 <div *ngIf="results" class="content">
-    <div *ngFor="let paper of results.results">
+    <div class="page-title">
+        Showing search results for {{ title }}
+    </div>
+    <div class="filters">
+        <button class="filter" mat-stroked-button color="accent" type="button" (click)="filterTopics()">
+            <mat-icon>filter_alt</mat-icon> Filter by category
+        </button>
+        <button class="filter" mat-stroked-button color="accent" type="button" (click)="filterJournals()">
+            <mat-icon>filter_alt</mat-icon> Filter by journal
+        </button>
+        <button class="filter" mat-stroked-button color="accent" type="button" (click)="filterYears()">
+            <mat-icon>filter_alt</mat-icon> Filter by publication year
+        </button>
+    </div>
+    <div *ngFor="let paper of results.results, let i = index">
         <br />
-        <a class="title" href="{{paper.url}}"><b>{{ paper.title }}</b></a>
-        <br />
+        <div class="header">
+            <a class="title" href="{{paper.url}}"><b>{{ paper.title }}</b></a>
+            <button mat-flat-button class="topic" [style.background-color]="getColour(i)" style="color: white;" type="button" (click)="filterYears()">{{ paper.topic }}</button>
+        </div>
         <div class="sources">
             <div class="authors"> 
                 <div *ngFor="let author of paper.authors, let i = index">

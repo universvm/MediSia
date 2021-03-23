@@ -14,17 +14,32 @@
                 </mat-form-field>
                 <div *ngIf="isAdvanced" class="searchForm" margin="5">
                     <mat-form-field class="form-entry">
+                        <mat-label>category</mat-label>
+                            <input placeholder="Enter category"
+                                   matInput
+                                   formControlName="category"
+                                   [matAutocomplete]="auto">
+                            <mat-autocomplete #auto="matAutocomplete">
+                              <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+                                {{option}}
+                              </mat-option>
+                            </mat-autocomplete>
+                            <mat-error>
+                                Please select a valid category from the list provided
+                            </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="form-entry">
                         <mat-label>author</mat-label>
                             <input formControlName="author" matInput placeholder="Enter author">
                         <mat-error>
-                            Please enter a valid query
+                            Please enter a valid author
                         </mat-error>
                     </mat-form-field>
                     <mat-form-field class="form-entry">
                         <mat-label>journal</mat-label>
                             <input formControlName="journal" matInput placeholder="Enter journal name">
                         <mat-error>
-                            Please enter a valid query
+                            Please enter a valid journal
                         </mat-error>
                     </mat-form-field>
                     <mat-form-field class="form-entry">

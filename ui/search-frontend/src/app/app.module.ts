@@ -7,19 +7,28 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatListModule } from '@angular/material/list';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SearchPageComponent } from './search-page/search-page.component';
 import { ResultsPageComponent } from './results-page/results-page.component';
+import { JournalFilterModalComponent } from './results-page/journal-filter-modal/journal-filter-modal.component';
+import { PubyearFilterModalComponent } from './results-page/pubyear-filter-modal/pubyear-filter-modal.component';
+import { TopicFilterModalComponent } from './results-page/topic-filter-modal/topic-filter-modal.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     SearchPageComponent,
-    ResultsPageComponent
+    ResultsPageComponent,
+    JournalFilterModalComponent,
+    PubyearFilterModalComponent,
+    TopicFilterModalComponent
   ],
   imports: [
     BrowserModule,
@@ -34,6 +43,9 @@ import { ResultsPageComponent } from './results-page/results-page.component';
     MatDividerModule,
     MatSlideToggleModule,
     FormsModule,
+    MatDialogModule,
+    MatListModule,
+    MatAutocompleteModule
   ],
   providers: [],
   bootstrap: [AppComponent]
