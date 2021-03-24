@@ -1,44 +1,138 @@
 {
-  "topics": ["Covid", "Pandemic"],
-  "authors": ["Betty Pfefferbaum", "Carol S. North"],
   "journals": ["New England Journal of Medicine", "Example Journal"],
   "pubyears": [2020, 2019],
   "results": [
     {
-      "title": "Mental Health and the Covid-19 Pandemic",
-      "abstract": "Uncertain prognoses, looming severe shortages of resources for testing and treatment and for protecting responders and health care providers from infection, imposition of unfamiliar public health measures that infringe on personal freedoms, large and growing financial losses, and conflicting messages from authorities are among the major stressors that undoubtedly will contribute to widespread emotional distress and increased risk for psychiatric illness associated with Covid-19. Health care providers have an important role in addressing these emotional outcomes as part of the pandemic response.",
-      "authors": ["Betty Pfefferbaum", "Carol S. North"],
-      "pubyear": 2020,
-      "journal": "New England Journal of Medicine",
-      "url": "https://www.nejm.org/doi/full/10.1056/NEJMp2008017",
-      "topic": "agriculture"
+      "doi": "10.1176/ajp.121.9.923",
+"year": 1965,
+"genre": "journal-article",
+"is_oa": false,
+"title": "A SPECIFIC PLACEBO EFFECT ENCOUNTERED IN THE USE OF DEXEDRINE IN A HYPERACTIVE CHILD",
+"doi_url": "https://doi.org/10.1176/ajp.121.9.923",
+"updated": "2020-09-12T03:47:53.605474",
+"oa_status": "closed",
+"publisher": "American Psychiatric Association Publishing",
+"z_authors": [
+{
+"given": "JOHN F.",
+"family": "McDERMOTT",
+"sequence": "first"
+}
+],
+"is_paratext": false,
+"journal_name": "American Journal of Psychiatry",
+"oa_locations": [],
+"data_standard": 2,
+"journal_is_oa": false,
+"journal_issns": "0002-953X,1535-7228",
+"journal_issn_l": "0002-953X",
+"published_date": "1965-03-01",
+"best_oa_location": null,
+"first_oa_location": null,
+"journal_is_in_doaj": false,
+"has_repository_copy": false,
+"abstract": "",
+"abstract_source": "na",
+"category": "psychiatry"
     },
     {
-      "title": "Mental Health and the Covid-19 Pandemic",
-      "abstract": "Uncertain prognoses, looming severe shortages of resources for testing and treatment and for protecting responders and health care providers from infection, imposition of unfamiliar public health measures that infringe on personal freedoms, large and growing financial losses, and conflicting messages from authorities are among the major stressors that undoubtedly will contribute to widespread emotional distress and increased risk for psychiatric illness associated with Covid-19. Health care providers have an important role in addressing these emotional outcomes as part of the pandemic response.",
-      "authors": ["Betty Pfefferbaum", "Carol S. North"],
-      "pubyear": 2020,
-      "journal": "New England Journal of Medicine",
-      "url": "https://www.nejm.org/doi/full/10.1056/NEJMp2008017",
-      "topic": "anatomy"
+      "doi": "10.1176/ajp.121.9.923",
+"year": 1965,
+"genre": "journal-article",
+"is_oa": false,
+"title": "A SPECIFIC PLACEBO EFFECT ENCOUNTERED IN THE USE OF DEXEDRINE IN A HYPERACTIVE CHILD",
+"doi_url": "https://doi.org/10.1176/ajp.121.9.923",
+"updated": "2020-09-12T03:47:53.605474",
+"oa_status": "closed",
+"publisher": "American Psychiatric Association Publishing",
+"z_authors": [
+{
+"given": "JOHN F.",
+"family": "McDERMOTT",
+"sequence": "first"
+}
+],
+"is_paratext": false,
+"journal_name": "American Journal of Psychiatry",
+"oa_locations": [],
+"data_standard": 2,
+"journal_is_oa": false,
+"journal_issns": "0002-953X,1535-7228",
+"journal_issn_l": "0002-953X",
+"published_date": "1965-03-01",
+"best_oa_location": null,
+"first_oa_location": null,
+"journal_is_in_doaj": false,
+"has_repository_copy": false,
+"abstract": "",
+"abstract_source": "na",
+"category": "psychiatry"
     },
     {
-      "title": "Mental Health and the Covid-19 Pandemic",
-      "abstract": "Uncertain prognoses, looming severe shortages of resources for testing and treatment and for protecting responders and health care providers from infection, imposition of unfamiliar public health measures that infringe on personal freedoms, large and growing financial losses, and conflicting messages from authorities are among the major stressors that undoubtedly will contribute to widespread emotional distress and increased risk for psychiatric illness associated with Covid-19. Health care providers have an important role in addressing these emotional outcomes as part of the pandemic response.",
-      "authors": ["Betty Pfefferbaum", "Carol S. North"],
-      "pubyear": 2020,
-      "journal": "New England Journal of Medicine",
-      "url": "https://www.nejm.org/doi/full/10.1056/NEJMp2008017",
-      "topic": "nursing"
+      "doi": "10.1176/ajp.121.9.923",
+"year": 1965,
+"genre": "journal-article",
+"is_oa": false,
+"title": "A SPECIFIC PLACEBO EFFECT ENCOUNTERED IN THE USE OF DEXEDRINE IN A HYPERACTIVE CHILD",
+"doi_url": "https://doi.org/10.1176/ajp.121.9.923",
+"updated": "2020-09-12T03:47:53.605474",
+"oa_status": "closed",
+"publisher": "American Psychiatric Association Publishing",
+"z_authors": [
+{
+"given": "JOHN F.",
+"family": "McDERMOTT",
+"sequence": "first"
+}
+],
+"is_paratext": false,
+"journal_name": "American Journal of Psychiatry",
+"oa_locations": [],
+"data_standard": 2,
+"journal_is_oa": false,
+"journal_issns": "0002-953X,1535-7228",
+"journal_issn_l": "0002-953X",
+"published_date": "1965-03-01",
+"best_oa_location": null,
+"first_oa_location": null,
+"journal_is_in_doaj": false,
+"has_repository_copy": false,
+"abstract": "",
+"abstract_source": "na",
+"category": "psychiatry"
     },
     {
-      "title": "Mental Health and the Covid-19 Pandemic",
-      "abstract": "Uncertain prognoses, looming severe shortages of resources for testing and treatment and for protecting responders and health care providers from infection, imposition of unfamiliar public health measures that infringe on personal freedoms, large and growing financial losses, and conflicting messages from authorities are among the major stressors that undoubtedly will contribute to widespread emotional distress and increased risk for psychiatric illness associated with Covid-19. Health care providers have an important role in addressing these emotional outcomes as part of the pandemic response.",
-      "authors": ["Betty Pfefferbaum", "Carol S. North"],
-      "pubyear": 2020,
-      "journal": "New England Journal of Medicine",
-      "url": "https://www.nejm.org/doi/full/10.1056/NEJMp2008017",
-      "topic": "dental"
+      "doi": "10.1176/ajp.121.9.923",
+"year": 1965,
+"genre": "journal-article",
+"is_oa": false,
+"title": "A SPECIFIC PLACEBO EFFECT ENCOUNTERED IN THE USE OF DEXEDRINE IN A HYPERACTIVE CHILD",
+"doi_url": "https://doi.org/10.1176/ajp.121.9.923",
+"updated": "2020-09-12T03:47:53.605474",
+"oa_status": "closed",
+"publisher": "American Psychiatric Association Publishing",
+"z_authors": [
+{
+"given": "JOHN F.",
+"family": "McDERMOTT",
+"sequence": "first"
+}
+],
+"is_paratext": false,
+"journal_name": "American Journal of Psychiatry",
+"oa_locations": [],
+"data_standard": 2,
+"journal_is_oa": false,
+"journal_issns": "0002-953X,1535-7228",
+"journal_issn_l": "0002-953X",
+"published_date": "1965-03-01",
+"best_oa_location": null,
+"first_oa_location": null,
+"journal_is_in_doaj": false,
+"has_repository_copy": false,
+"abstract": "",
+"abstract_source": "na",
+"category": "psychiatry"
     }
   ]
 }
