@@ -4,14 +4,15 @@ import { Router } from '@angular/router';
 import { SearchService } from '../search.service';
 import { Observable } from 'rxjs';
 import {map, startWith} from 'rxjs/operators';
+import { ResultsService } from '../results.service';
 
 export interface SearchData {
   query: string | null;
-  category: string[] | null;
-  author: string[] | null;
-  journal: string[] | null;
-  pubyear: number[] | null;
-  deepSearch: boolean;
+  categories: string[] | null;
+  //author: string[] | null;
+  journals: string[] | null;
+  pubyears: number[] | null;
+  deep: boolean;
 }
 
 const options: string[] = ["agriculture", "anatomy", "biochemistry", "bioengineering", "bioinformatics",
@@ -30,23 +31,23 @@ export class SearchPageComponent implements OnInit {
 
   searchForm = new FormGroup({
     query: new FormControl(null, [Validators.required]),
-    category: new FormControl(null, [this.categoryValidator]),
-    author: new FormControl(null),
-    journal: new FormControl(null),
-    pubyear: new FormControl(null, [this.pubYearValidator]),
-    deepSearch: new FormControl(false),
+    categories: new FormControl(null, [this.categoryValidator]),
+    //author: new FormControl(null),
+    journals: new FormControl(null),
+    pubyears: new FormControl(null, [this.pubYearValidator]),
+    deep: new FormControl(false),
   });
 
   isAdvanced: boolean = false;
-  isDeep: boolean = false;
 
   constructor(
     private router: Router,
     private searchService: SearchService,
+    private resultsService: ResultsService,
   ) { }
 
   ngOnInit() {
-    this.filteredOptions = this.searchForm.controls.category.valueChanges
+    this.filteredOptions = this.searchForm.controls.categories.valueChanges
       .pipe(
         startWith(''),
         map(value => this._filter(value))
@@ -55,22 +56,21 @@ export class SearchPageComponent implements OnInit {
 
   private _filter(value: any): string[] {
     const filterValue = value.toLowerCase();
-
     return options.filter(option => option.toLowerCase().includes(filterValue));
   }
 
   onSubmit() {
     const value: SearchData = this.searchForm.value;
-
-    console.log(value.query);
-    console.log(value.category);
-    console.log(value.author);
-    console.log(value.journal);
-    console.log(value.pubyear);
-    console.log(value.deepSearch);
-
     // when sending to backend, atm if !isAdvanced, set those fields to null regardless of input
+    if (!this.isAdvanced) {
+      //value.author = null;
+      value.categories = null;
+      value.journals = null;
+      value.pubyears = null;
+    }
     this.searchService.searchData = value;
+    this.resultsService.reset();
+    this.resultsService.updateQuery({ propagate: true });
     this.router.navigate(['results']);
   }
 

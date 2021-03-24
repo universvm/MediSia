@@ -1,7 +1,8 @@
-<div *ngIf="results" class="content">
+<div class="content">
     <div class="page-title">
         Showing search results for {{ title }}
     </div>
+    <div>
     <div class="filters">
         <button class="filter" mat-stroked-button color="accent" type="button" (click)="filterTopics()">
             <mat-icon>filter_alt</mat-icon> Filter by category
@@ -13,20 +14,21 @@
             <mat-icon>filter_alt</mat-icon> Filter by publication year
         </button>
     </div>
-    <div *ngFor="let paper of results.results, let i = index">
+    <div *ngIf="!loading">
+    <div *ngFor="let paper of (results | async)?.results, let i = index">
         <br />
         <div class="header">
             <a class="title" href="{{paper.url}}"><b>{{ paper.title }}</b></a>
-            <button mat-flat-button class="topic" [style.background-color]="getColour(i)" style="color: white;" type="button" (click)="filterYears()">{{ paper.topic }}</button>
+            <button mat-flat-button class="topic" [style.background-color]="getColour(paper.topic)" style="color: white;" type="button" (click)="filterYears()">{{ paper.topic }}</button>
         </div>
         <div class="sources">
             <div class="authors"> 
                 <div *ngFor="let author of paper.authors, let i = index">
                     <div *ngIf="i == 0">
-                        {{ author }}
+                        {{ author.name }}
                     </div>
                     <div *ngIf="i >= 1">
-                        , {{ author }}
+                        , {{ author.name }}
                     </div>
                 </div>
             </div>
@@ -34,4 +36,7 @@
         </div>
         {{ paper.abstract }}
     </div>
+    </div>
+    <mat-spinner class="matrix-spinner" *ngIf="loading"></mat-spinner>
+</div>
 </div>

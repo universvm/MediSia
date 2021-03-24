@@ -1,8 +1,9 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { SearchService } from 'src/app/search.service';
 import { MatSelectionListChange } from '@angular/material/list';
 import { SearchData } from 'src/app/search-page/search-page.component';
+import { ResultsService } from 'src/app/results.service';
+import { SearchService } from 'src/app/search.service';
 
 @Component({
   selector: 'app-journal-filter-modal',
@@ -22,13 +23,14 @@ export class JournalFilterModalComponent implements OnInit {
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: string[],
+    private resultsService: ResultsService,
     private searchService: SearchService,
   ) { 
-    this.journals = this.searchService.journals;
+    this.journals = this.resultsService.journals;
     this.searchData = this.searchService.searchData;
     if (this.searchService.searchData) {
-      this.includedJournals = this.searchService.searchData.journal ? this.searchService.searchData.journal : [];
-      this.originalJournals = this.searchService.searchData.journal ? this.searchService.searchData.journal : [];
+      this.includedJournals = this.searchService.searchData.journals ? this.searchService.searchData.journals : [];
+      this.originalJournals = this.searchService.searchData.journals ? this.searchService.searchData.journals : [];
     }
   }
 
@@ -38,9 +40,9 @@ export class JournalFilterModalComponent implements OnInit {
 
   onSelChange(event: MatSelectionListChange) {
     const includedJournals = new Set(event.source.options.filter(o => o.selected).map(o => o.value));
-    this.searchService.searchData!.journal = [...includedJournals];
-    this.includedJournals = this.searchService.searchData!.journal ? this.searchService.searchData!.journal : [];
-    console.log(this.searchService.searchData!.journal);
+    this.searchService.searchData!.journals = [...includedJournals];
+    this.includedJournals = this.searchService.searchData!.journals ? this.searchService.searchData!.journals : [];
+    console.log(this.searchService.searchData!.journals);
   }
 
   applyFilters() {
@@ -48,8 +50,8 @@ export class JournalFilterModalComponent implements OnInit {
   }
 
   cancelFilters() {
-    this.searchService.searchData!.journal = this.originalJournals;
-    console.log(this.searchService.searchData!.journal);
+    this.searchService.searchData!.journals = this.originalJournals;
+    console.log(this.searchService.searchData!.journals);
   }
   //isAllSelected(includedJournals = this.filter.includedJournals) {
     //return includedJournals === null || this.carrierList?.groups?.every(c => includedCarrierCodes.has(c.label.code));

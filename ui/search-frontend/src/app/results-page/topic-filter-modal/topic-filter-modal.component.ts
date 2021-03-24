@@ -1,8 +1,9 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { SearchData } from 'src/app/search-page/search-page.component';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { SearchService } from 'src/app/search.service';
 import { MatSelectionListChange } from '@angular/material/list';
+import { ResultsService } from 'src/app/results.service';
+import { SearchService } from 'src/app/search.service';
 
 @Component({
   selector: 'app-topic-filter-modal',
@@ -22,13 +23,14 @@ export class TopicFilterModalComponent implements OnInit {
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: string[],
+    private resultsService: ResultsService,
     private searchService: SearchService,
   ) { 
-    this.topics = this.searchService.topics;
+    this.topics = this.resultsService.categories;
     this.searchData = this.searchService.searchData;
     if (this.searchService.searchData) {
-      this.includedTopics = this.searchService.searchData.category ? this.searchService.searchData.category : [];
-      this.originalTopics = this.searchService.searchData.category ? this.searchService.searchData.category : [];
+      this.includedTopics = this.searchService.searchData.categories ? this.searchService.searchData.categories : [];
+      this.originalTopics = this.searchService.searchData.categories ? this.searchService.searchData.categories : [];
     }
   }
 
@@ -38,9 +40,9 @@ export class TopicFilterModalComponent implements OnInit {
 
   onSelChange(event: MatSelectionListChange) {
     const includedTopics = new Set(event.source.options.filter(o => o.selected).map(o => o.value));
-    this.searchService.searchData!.category = [...includedTopics];
-    this.includedTopics = this.searchService.searchData!.category ? this.searchService.searchData!.category : [];
-    console.log(this.searchService.searchData!.category);
+    this.searchService.searchData!.categories = [...includedTopics];
+    this.includedTopics = this.searchService.searchData!.categories ? this.searchService.searchData!.categories : [];
+    console.log(this.searchService.searchData!.categories);
   }
 
   applyFilters() {
@@ -48,8 +50,8 @@ export class TopicFilterModalComponent implements OnInit {
   }
 
   cancelFilters() {
-    this.searchService.searchData!.journal = this.originalTopics;
-    console.log(this.searchService.searchData!.category);
+    this.searchService.searchData!.categories = this.originalTopics;
+    console.log(this.searchService.searchData!.categories);
   }
   //isAllSelected(includedJournals = this.filter.includedJournals) {
     //return includedJournals === null || this.carrierList?.groups?.every(c => includedCarrierCodes.has(c.label.code));

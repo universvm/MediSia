@@ -1,40 +1,92 @@
 export type ResultsJson = {
-    "topics": string[];
-    "authors": string[];
+    //"topics": string[];
+    //"authors": string[];
     "journals": string[];
     "pubyears": number[];
     "results": 
       {
-        "title": string;
-        "abstract": string;
-        "authors": string[];
-        "pubyear": number;
-        "journal": string;
-        "url": string;
-        "topic": string;
+        "doi": string,
+        "year": number,
+        "genre": string,
+        "is_oa": boolean,
+        "title": string,
+        "doi_url": string,
+        "updated": string,
+        "oa_status": string,
+        "publisher": string,
+        "z_authors": 
+            {
+                "given": string,
+                "family": string,
+                "sequence": string,
+            }[],
+        "is_paratext": boolean,
+        "journal_name": string,
+        "oa_locations": string[],
+        "data_standard": number,
+        "journal_is_oa": boolean,
+        "journal_issns": string,
+        "journal_issn_l": string,
+        "published_date": string,
+        "best_oa_location": string | null,
+        "first_oa_location": string | null,
+        "journal_is_in_doaj": boolean,
+        "has_repository_copy": boolean,
+        "abstract": string,
+        "abstract_source": string,
+        "category": string,
       }[]
 }
 
 export type PaperJson = {
-    "title": string;
-    "abstract": string;
-    "authors": string[];
-    "pubyear": number;
-    "journal": string;
-    "url": string;
-    "topic": string;
+    "doi": string,
+    "year": number,
+    "genre": string,
+    "is_oa": boolean,
+    "title": string,
+    "doi_url": string,
+    "updated": string,
+    "oa_status": string,
+    "publisher": string,
+    "z_authors": 
+        {
+            "given": string,
+            "family": string,
+            "sequence": string,
+        }[],
+    "is_paratext": boolean,
+    "journal_name": string,
+    "oa_locations": string[],
+    "data_standard": number,
+    "journal_is_oa": boolean,
+    "journal_issns": string,
+    "journal_issn_l": string,
+    "published_date": string,
+    "best_oa_location": string | null,
+    "first_oa_location": string | null,
+    "journal_is_in_doaj": boolean,
+    "has_repository_copy": boolean,
+    "abstract": string,
+    "abstract_source": string,
+    "category": string,
+}
+
+export type AuthorJson = {
+    "given": string,
+    "family": string,
+    "sequence": string,
 }
 
 export class Results {
-    topics: string[];
-    authors: string[];
+    //topics: string[];
+    //authors: string[];
     journals: string[];
     pubyears: number[];
     results: Paper[];
 
     constructor(resultsJson: ResultsJson) {
-        this.topics = resultsJson.topics;
-        this.authors = resultsJson.authors;
+        //this.topics = resultsJson.topics;
+        //this.authors = resultsJson.authors;
         this.journals = resultsJson.journals;
         this.pubyears = resultsJson.pubyears;
         this.results = resultsJson.results.map(result => {return new Paper(result)})
@@ -44,7 +96,7 @@ export class Results {
 export class Paper {
     title: string;
     abstract: string;
-    authors: string[];
+    authors: Author[];
     pubyear: number;
     journal: string;
     url: string;
@@ -53,11 +105,11 @@ export class Paper {
     constructor(paperJson: PaperJson) {
         this.title = paperJson.title;
         this.abstract = this.truncateChar(paperJson.abstract);
-        this.authors = paperJson.authors;
-        this.pubyear = paperJson.pubyear;
-        this.journal = paperJson.journal;
-        this.url = paperJson.url;
-        this.topic = paperJson.topic;
+        this.authors = paperJson.z_authors.map(author => new Author(author));
+        this.pubyear = paperJson.year;
+        this.journal = paperJson.journal_name;
+        this.url = paperJson.doi_url;
+        this.topic = paperJson.category;
     }  
     
     truncateChar(text: string): string {
@@ -70,5 +122,13 @@ export class Paper {
     
         let shortened = text.substring(0, charlimit) + "...";
         return shortened;
+    }
+}
+
+export class Author {
+    name: string;
+
+    constructor(authorJson: AuthorJson) {
+        this.name = authorJson.given + " " + authorJson.family;
     }
 }

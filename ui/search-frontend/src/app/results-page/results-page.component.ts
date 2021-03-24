@@ -1,19 +1,29 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import testdata from '../../assets/testdata.json';
-import { Results, Paper } from './results.types';
-import { SearchService } from '../search.service';
+import { Results, Paper, ResultsJson } from './results.types';
 import { MatDialog } from '@angular/material/dialog';
 import { JournalFilterModalComponent } from './journal-filter-modal/journal-filter-modal.component';
 import { PubyearFilterModalComponent } from './pubyear-filter-modal/pubyear-filter-modal.component';
 import { TopicFilterModalComponent } from './topic-filter-modal/topic-filter-modal.component';
+import { ResultsService, SearchQuery } from '../results.service';
+import { SearchService } from '../search.service';
+import { tap, map, filter } from 'rxjs/operators';
+import { ReplaySubject, Observable } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-results-page',
   templateUrl: './results-page.component.html',
   styleUrls: ['./results-page.component.scss']
 })
-export class ResultsPageComponent implements OnInit {
-  results: Results | null;
+export class ResultsPageComponent implements OnInit, OnDestroy {
+  readonly resultsData$ = new ReplaySubject<ResultsJson | null>(1);
+  results: Observable<Results> = new Observable();
+
+  loading = true;
+
+  private readonly unsubscribers: (() => void)[] = [];
+
   title: string = "";
   colours: {[topic: string]: string} = {
     "agriculture": "#00ccff",
@@ -45,25 +55,54 @@ export class ResultsPageComponent implements OnInit {
   }
 
   constructor(
+    private resultsService: ResultsService,
     private searchService: SearchService,
     public dialog: MatDialog, 
+    private router: Router,
   ) {
-    this.results = new Results(testdata);
     this.title = this.createTitle();
   }
 
   createTitle() {
     if (this.searchService.searchData === null) return "";
     var temp = "\"" + this.searchService.searchData!.query;
-    if (this.searchService.searchData!.category !== null) temp = temp + ", " + this.searchService.searchData!.category;
-    if (this.searchService.searchData!.author !== null) temp = temp + ", " + this.searchService.searchData!.author;
-    if (this.searchService.searchData!.journal !== null) temp = temp + ", " + this.searchService.searchData!.journal;
-    if (this.searchService.searchData!.pubyear !== null) temp = temp + ", " + this.searchService.searchData!.pubyear;
+    if (this.searchService.searchData!.categories !== null) temp = temp + ", " + this.searchService.searchData!.categories;
+    //if (this.searchService.searchData!.author !== null) temp = temp + ", " + this.searchService.searchData!.author;
+    if (this.searchService.searchData!.journals !== null) temp = temp + ", " + this.searchService.searchData!.journals;
+    if (this.searchService.searchData!.pubyears !== null) temp = temp + ", " + this.searchService.searchData!.pubyears;
     return temp + "\"";
   }
 
-  getColour(index: number) {
-    const topic = this.results!.results[index].topic;
+  ngOnInit() {
+    this.checkIfComingFromSearch();
+    const subscription = this.resultsService.result$.pipe(
+      tap(() => this.loading = false),
+    ).subscribe(this.resultsData$);
+    this.unsubscribers.push(() => subscription.unsubscribe());
+
+    this.results = this.resultsData$.pipe(
+      filter((data): data is ResultsJson => data !== null),
+      //map(data => data.results ?? data.carrierStopMatrixSlice?.[0] ?? throwErr(`No carrierstop matrix! ${JSON.stringify(data)}`)),
+      map(data => new Results(data)),
+    );
+
+    //this.searchQuery$ = this.flightStateService.getQuery();
+  }
+
+  /**
+   * Checks that the user is coming from the search page. If the user has
+   * navigated to this page directly, without going through the search page, it
+   * redirects them to the search page. 
+   */
+  checkIfComingFromSearch() {
+    if (this.searchService.searchData === null) {
+      // the search data on the search service is not set, so the
+      // user has not previously visited the search page
+      this.router.navigate(['search']);
+    }
+  }
+
+  getColour(topic: string) {
     return this.colours[topic];
   }
 
@@ -91,6 +130,22 @@ export class ResultsPageComponent implements OnInit {
     console.log('hi');
   }
 
-  ngOnInit(): void {}
+  /**
+   * Handles updates to the filter
+   * Always a follow-up request
+   * @param update: filter elements that need to be updated
+   */
+  updateFilter(update: Partial<SearchQuery>) {
+    this.loading = true;
+    this.resultsService.updateQuery({
+      ...update,
+      propagate: true,
+      type: "follow-up",
+    });
+  }
+
+  ngOnDestroy() {
+    this.unsubscribers.forEach(a => a());
+  }
 
 }

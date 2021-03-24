@@ -11,6 +11,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatListModule } from '@angular/material/list';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -20,6 +21,7 @@ import { ResultsPageComponent } from './results-page/results-page.component';
 import { JournalFilterModalComponent } from './results-page/journal-filter-modal/journal-filter-modal.component';
 import { PubyearFilterModalComponent } from './results-page/pubyear-filter-modal/pubyear-filter-modal.component';
 import { TopicFilterModalComponent } from './results-page/topic-filter-modal/topic-filter-modal.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -45,7 +47,9 @@ import { TopicFilterModalComponent } from './results-page/topic-filter-modal/top
     FormsModule,
     MatDialogModule,
     MatListModule,
-    MatAutocompleteModule
+    MatAutocompleteModule,
+    HttpClientModule,
+    MatProgressSpinnerModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -17,7 +17,7 @@
                         <mat-label>category</mat-label>
                             <input placeholder="Enter category"
                                    matInput
-                                   formControlName="category"
+                                   formControlName="categories"
                                    [matAutocomplete]="auto">
                             <mat-autocomplete #auto="matAutocomplete">
                               <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
@@ -28,30 +28,30 @@
                                 Please select a valid category from the list provided
                             </mat-error>
                     </mat-form-field>
-                    <mat-form-field class="form-entry">
+                    <!--mat-form-field class="form-entry">
                         <mat-label>author</mat-label>
                             <input formControlName="author" matInput placeholder="Enter author">
                         <mat-error>
                             Please enter a valid author
                         </mat-error>
-                    </mat-form-field>
+                    </mat-form-field-->
                     <mat-form-field class="form-entry">
                         <mat-label>journal</mat-label>
-                            <input formControlName="journal" matInput placeholder="Enter journal name">
+                            <input formControlName="journals" matInput placeholder="Enter journal name">
                         <mat-error>
                             Please enter a valid journal
                         </mat-error>
                     </mat-form-field>
                     <mat-form-field class="form-entry">
                         <mat-label>publication year</mat-label>
-                            <input formControlName="pubyear" matInput placeholder="Enter publication year">
+                            <input formControlName="pubyears" matInput placeholder="Enter publication year">
                         <mat-error>
                             Please enter a valid year or range of years, e.g. 2019, 2010-2012
                         </mat-error>
                     </mat-form-field>
                 </div>
                 <div class="toggle" margin="5">
-                    <mat-slide-toggle formControlName="deepSearch">Deep search</mat-slide-toggle>
+                    <mat-slide-toggle formControlName="deep">Deep search</mat-slide-toggle>
                 </div>
                 <div class="search-button-container">
                     <button class="advanced-button" mat-stroked-button color="primary" type="button" (click)="onAdvanced()">
