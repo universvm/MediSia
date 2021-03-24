@@ -41,7 +41,7 @@ export class QueryService {
     params.append("type", query.type);
     params.append("deep", query.deep.toString());
     return this.http.get(
-        'http://localhost:8000' + '/search',
+        'http://127.0.0.1' + '/search',
         { params: params }
       );
   }
