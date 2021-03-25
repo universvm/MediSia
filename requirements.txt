@@ -57,7 +57,7 @@ jupyter-core @ file:///tmp/build/80754af9/jupyter_core_1612213311222/work
 jupyterlab==2.2.6
 jupyterlab-pygments @ file:///tmp/build/80754af9/jupyterlab_pygments_1601490720602/work
 jupyterlab-server @ file:///tmp/build/80754af9/jupyterlab_server_1594164409481/work
-lxml==4.6.2
+lxml==4.6.3
 MarkupSafe==1.1.1
 metapub==0.5.5
 mistune==0.8.4
