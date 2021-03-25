@@ -33,16 +33,17 @@ export class QueryService {
    */
   fetchSearch(query: SearchQuery): Observable<any> {
     console.log("searching")
-    let params = new HttpParams();
-    if (query.query) params.append("query", query.query);
-    if (query.categories) params.append("categories", this.makeStringFromList(query.categories));
-    if (query.journals) params.append("journals", this.makeStringFromList(query.journals));
-    if (query.pubyears) params.append("pubyears", this.makeStringFromList(query.pubyears));
-    params.append("type", query.type);
-    params.append("deep", query.deep.toString());
+    let params = "";
+    console.log("query " + query)
+    if (query.query) params = params + "?query=" + query.query;
+    if (query.categories) params = params + "&categories=" + this.makeStringFromList(query.categories);
+    if (query.journals) params = params + "&journals=" + this.makeStringFromList(query.journals);
+    if (query.pubyears) params = params + "&pubyears=" + this.makeStringFromList(query.pubyears);
+    params = params + "&type=" + query.type;
+    params = params + "&deep=" + query.deep.toString();
+    console.log("params " + params)
     return this.http.get(
-        'http://127.0.0.1' + '/search',
-        { params: params }
+        'http://127.0.0.1' + '/search' + params,
       );
   }
 

@@ -70,7 +70,14 @@ export class SearchPageComponent implements OnInit {
     }
     this.searchService.searchData = value;
     this.resultsService.reset();
-    this.resultsService.updateQuery({ propagate: true });
+    this.resultsService.updateQuery({ 
+      query: value.query,
+      categories: value.categories,
+      journals: value.journals,
+      pubyears: value.pubyears,
+      deep: value.deep,
+      propagate: true 
+    });
     this.router.navigate(['results']);
   }
 
