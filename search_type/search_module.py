@@ -367,7 +367,7 @@ class FollowUpSearch:
             if category not in category_index:
                 category_index.add(category)
 
-        return docid_index, date_index, journal_index, list(category_index).sort()
+        return docid_index, date_index, journal_index, list(category_index)
 
     def search_date(self, start: int, end: t.Union[int, None]) -> t.List[dict]:
         """
@@ -461,7 +461,9 @@ if __name__ == "__main__":
     print(json_response)
     followup_search = FollowUpSearch(json_response)
     # Return list of dates and journals for the front end:
-    date_list, journals_list = followup_search.return_indeces()
+    date_list, journals_list, category_list = followup_search.return_indeces()
+    print(category_list)
+    print(journals_list[:5])
     # 3. Follow up search
     p = followup_search.search_journal(
         ["Journal of Industrial Microbiology & Biotechnology"]
