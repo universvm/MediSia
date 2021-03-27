@@ -320,9 +320,14 @@ class FollowUpSearch:
         """
         self.json_response = json_response
         # Create indeces from json response:
-        self.docid_index, self.date_index, self.journal_index = self._create_indeces()
+        (
+            self.docid_index,
+            self.date_index,
+            self.journal_index,
+            self.category_index,
+        ) = self._create_indeces()
 
-    def _create_indeces(self) -> (dict, dict, dict):
+    def _create_indeces(self) -> (dict, dict, dict, list):
         """
         Creates indeces of docid, date and journal. Because the json response
         is ranked by most relevant, the index is also ordered by most relevant
@@ -336,11 +341,14 @@ class FollowUpSearch:
             {date: docid}
         journal_index: dict
             {journal: docid}
+        category_index: list
+            list of str with categories
         """
         # Initialize empty indeces:
         docid_index = {}
         date_index = {}
         journal_index = {}
+        category_index = set()
 
         for i, json_obj in enumerate(self.json_response):
             # Create general index:
@@ -355,8 +363,11 @@ class FollowUpSearch:
             if journal not in journal_index.keys():
                 journal_index[journal] = []
             journal_index[journal].append(i)
+            category = json_obj["category"]
+            if category not in category_index:
+                category_index.add(category)
 
-        return docid_index, date_index, journal_index
+        return docid_index, date_index, journal_index, list(category_index)
 
     def search_date(self, start: int, end: t.Union[int, None]) -> t.List[dict]:
         """
@@ -431,7 +442,11 @@ class FollowUpSearch:
         return response
 
     def return_indeces(self):
-        return list(self.date_index.keys()), list(self.journal_index.keys())
+        return (
+            list(self.date_index.keys()),
+            list(self.journal_index.keys()),
+            self.category_index,
+        )
 
 
 if __name__ == "__main__":
@@ -440,13 +455,19 @@ if __name__ == "__main__":
     sorted_score, json_response = search_module.search("coronavirus")
     # 2. Category Search
     print(json_response)
-    sorted_score, json_response = search_module.search("coronavirus", category=["biochemistry", "bioengineering"])
+    sorted_score, json_response = search_module.search(
+        "coronavirus", category=["biochemistry", "bioengineering"]
+    )
     print(json_response)
     followup_search = FollowUpSearch(json_response)
     # Return list of dates and journals for the front end:
-    date_list, journals_list = followup_search.return_indeces()
+    date_list, journals_list, category_list = followup_search.return_indeces()
+    print(category_list)
+    print(journals_list[:5])
     # 3. Follow up search
-    p = followup_search.search_journal(["Journal of Industrial Microbiology & Biotechnology"])
+    p = followup_search.search_journal(
+        ["Journal of Industrial Microbiology & Biotechnology"]
+    )
     print(p)
     followup_search = FollowUpSearch(p)
     p = followup_search.search_date(2000, None)
