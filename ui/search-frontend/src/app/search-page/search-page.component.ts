@@ -8,10 +8,10 @@ import { ResultsService } from '../results.service';
 
 export interface SearchData {
   query: string | null;
-  categories: string[] | null;
+  categories: string | null;
   //author: string[] | null;
-  journals: string[] | null;
-  pubyears: number[] | null;
+  journals: string | null;
+  pubyears: string | null;
   deep: boolean;
 }
 

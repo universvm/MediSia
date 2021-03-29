@@ -11,7 +11,7 @@ import { SearchService } from 'src/app/search.service';
   styleUrls: ['./journal-filter-modal.component.scss']
 })
 export class JournalFilterModalComponent implements OnInit {
-  journals: Set<string>;
+  journals: string[];
   searchData: SearchData | null;
   includedJournals: string[] = [];
   originalJournals: string[] = [];
@@ -22,16 +22,26 @@ export class JournalFilterModalComponent implements OnInit {
   //private unsubscribers: (() => void)[] = [];
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: string[],
+    @Inject(MAT_DIALOG_DATA) public data: any,
     private resultsService: ResultsService,
     private searchService: SearchService,
   ) { 
-    this.journals = this.resultsService.journals;
+    this.journals = [...this.resultsService.journals].slice(0,10);
     this.searchData = this.searchService.searchData;
     if (this.searchService.searchData) {
-      this.includedJournals = this.searchService.searchData.journals ? this.searchService.searchData.journals : [];
-      this.originalJournals = this.searchService.searchData.journals ? this.searchService.searchData.journals : [];
+      this.includedJournals = this.searchService.searchData.journals ? this.makeListFromString(this.searchService.searchData.journals) : [];
+      this.originalJournals = this.searchService.searchData.journals ? this.makeListFromString(this.searchService.searchData.journals) : [];
     }
+  }
+
+  makeListFromString(journals: string) {
+    if (journals.includes(',')) {
+      return journals.split(',').map(journal => journal.trim());
+    } else return [journals];
+  }
+
+  check(journal: string) {
+    return this.includedJournals.includes(journal);
   }
 
   ngOnInit() { }
@@ -40,17 +50,22 @@ export class JournalFilterModalComponent implements OnInit {
 
   onSelChange(event: MatSelectionListChange) {
     const includedJournals = new Set(event.source.options.filter(o => o.selected).map(o => o.value));
-    this.searchService.searchData!.journals = [...includedJournals];
-    this.includedJournals = this.searchService.searchData!.journals ? this.searchService.searchData!.journals : [];
+    this.searchService.searchData!.journals = [...includedJournals].join();
+    this.includedJournals = this.searchService.searchData!.journals ? this.makeListFromString(this.searchService.searchData!.journals) : [];
     console.log(this.searchService.searchData!.journals);
   }
 
   applyFilters() {
     console.log(this.searchService.searchData);
+    this.resultsService.updateQuery({
+      journals: this.searchService.searchData!.journals,
+      type: "follow-up",
+      propagate: true,
+    });
   }
 
   cancelFilters() {
-    this.searchService.searchData!.journals = this.originalJournals;
+    this.searchService.searchData!.journals = this.originalJournals.join();
     console.log(this.searchService.searchData!.journals);
   }
   //isAllSelected(includedJournals = this.filter.includedJournals) {

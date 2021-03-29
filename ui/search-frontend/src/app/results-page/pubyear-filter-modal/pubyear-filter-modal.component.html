@@ -2,9 +2,9 @@
 <mat-selection-list mat-dialog-content
   (selectionChange)="onSelChange($event)">
   <mat-list-option *ngFor="let year of years" checkboxPosition="before"
-    [selected]="includedYears?.includes(year)" [value]="year">
+    [selected]="includedYears?.includes(year.toString())" [value]="year">
     <div class="container">
-      <span class="short-name" style="font-weight: bold;">{{ year }}</span>
+      <span class="short-name" style="font-weight: bold;">Since {{ year }}</span>
     </div>
   </mat-list-option>
 </mat-selection-list>

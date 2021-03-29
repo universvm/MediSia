@@ -5,7 +5,11 @@ import { switchMap, delay, tap } from 'rxjs/operators';
 import { ResultsJson } from './results-page/results.types';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 
-//const httpHeaders = { 'Content-Type': 'application/json; charset=UTF-8' };
+//const httpHeaders = new HttpHeaders({
+  //'Content-Type': 'application/json',
+  //'Accept': 'application/json',
+  //'Access-Control-Allow-Origin': '*',
+//});
 
 @Injectable({
   providedIn: 'root'
@@ -35,20 +39,44 @@ export class QueryService {
     console.log("searching")
     let params = "";
     console.log("query " + query)
-    if (query.query) params = params + "?query=" + query.query;
-    if (query.categories) params = params + "&categories=" + this.makeStringFromList(query.categories);
-    if (query.journals) params = params + "&journals=" + this.makeStringFromList(query.journals);
-    if (query.pubyears) params = params + "&pubyears=" + this.makeStringFromList(query.pubyears);
+    if (query.query) {
+      params = params + "?query=" + query.query;
+    }
+    if (query.categories) {
+      params = params + "&categories=" + "[" + this.makeStringListFromString(query.categories) + "]";
+    }
+    if (query.journals) {
+      params = params + "&journals=" + "[" + this.makeStringListFromString(query.journals) + "]";
+    }
+    if (query.pubyears) {
+      params = params + "&pubyears=" + this.makeStringFromRange(query.pubyears);
+    }
     params = params + "&type=" + query.type;
-    params = params + "&deep=" + query.deep.toString();
+    params = params + "&deep=" + this.makeStringFromBool(query.deep);
     console.log("params " + params)
     return this.http.get(
         'http://127.0.0.1' + '/search' + params,
       );
   }
 
-  makeStringFromList(list: any[]) {
-    return "[" + list.join() + "]";
+  makeStringListFromString(list: string) {
+    if (list.includes(',')) {
+      let items = list.split(',');
+      return items.map(item => {return "\"" + item.trim() + "\""}).join();
+    } else return "\"" + list + "\"";
+  }
+
+  makeStringFromBool(bool: boolean) {
+    if (bool === true) return "True";
+    else return "False";
+  }
+
+  makeStringFromRange(range: string) {
+    if (range.includes('-')) {
+      let options = range.split('-');
+      return "[" + options[0] + ',' + options[1] + ']';
+    }
+    return "[" + range + ",None" + ']';
   }
 
 }

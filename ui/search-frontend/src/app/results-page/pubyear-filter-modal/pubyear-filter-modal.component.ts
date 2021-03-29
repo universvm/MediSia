@@ -11,10 +11,10 @@ import { SearchService } from 'src/app/search.service';
   styleUrls: ['./pubyear-filter-modal.component.scss']
 })
 export class PubyearFilterModalComponent implements OnInit {
-  years: Set<number>;
+  years: number[];
   searchData: SearchData | null;
-  includedYears: number[] = [];
-  originalYears: number[] = [];
+  includedYears: string[] = [];
+  originalYears: string[] = [];
 
   //filter: SolutionFilter = INITIALIZE_LATER;
   //flightsData: travel.matrix.IResult = INITIALIZE_LATER;
@@ -26,12 +26,18 @@ export class PubyearFilterModalComponent implements OnInit {
     private resultsService: ResultsService,
     private searchService: SearchService,
   ) { 
-    this.years = this.resultsService.pubyears;
+    this.years = [...this.resultsService.pubyears].slice(0, 10).sort(function(a, b){return b-a});;
     this.searchData = this.searchService.searchData;
     if (this.searchService.searchData) {
-      this.includedYears = this.searchService.searchData.pubyears ? this.searchService.searchData.pubyears : [];
-      this.originalYears = this.searchService.searchData.pubyears ? this.searchService.searchData.pubyears : [];
+      this.includedYears = this.searchService.searchData.pubyears ? this.makeListFromString(this.searchService.searchData.pubyears) : [];
+      this.originalYears = this.searchService.searchData.pubyears ? this.makeListFromString(this.searchService.searchData.pubyears) : [];
     }
+  }
+
+  makeListFromString(journals: string) {
+    if (journals.includes(',')) {
+      return journals.split(',');
+    } else return [journals];
   }
 
   ngOnInit() { }
@@ -40,17 +46,22 @@ export class PubyearFilterModalComponent implements OnInit {
 
   onSelChange(event: MatSelectionListChange) {
     const includedYears = new Set(event.source.options.filter(o => o.selected).map(o => o.value));
-    this.searchService.searchData!.pubyears = [...includedYears];
-    this.includedYears = this.searchService.searchData!.pubyears ? this.searchService.searchData!.pubyears : [];
+    this.searchService.searchData!.pubyears = [...includedYears].join();
+    this.includedYears = this.searchService.searchData!.pubyears ? this.makeListFromString(this.searchService.searchData!.pubyears) : [];
     console.log(this.searchService.searchData!.pubyears);
   }
 
   applyFilters() {
     console.log(this.searchService.searchData);
+    this.resultsService.updateQuery({
+      pubyears: this.searchService.searchData!.pubyears,
+      type: "follow-up",
+      propagate: true,
+    });
   }
 
   cancelFilters() {
-    this.searchService.searchData!.pubyears = this.originalYears;
+    this.searchService.searchData!.pubyears = this.originalYears.join();
     console.log(this.searchService.searchData!.pubyears);
   }
   //isAllSelected(includedJournals = this.filter.includedJournals) {

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output } from '@angular/core';
 import testdata from '../../assets/testdata.json';
 import { Results, Paper, ResultsJson } from './results.types';
 import { MatDialog } from '@angular/material/dialog';
@@ -19,6 +19,8 @@ import { Router } from '@angular/router';
 export class ResultsPageComponent implements OnInit, OnDestroy {
   readonly resultsData$ = new ReplaySubject<ResultsJson | null>(1);
   results: Observable<Results> = new Observable();
+  numPages: number = 0;
+  pages: Paper[][] = [];
 
   loading = true;
 
@@ -85,8 +87,6 @@ export class ResultsPageComponent implements OnInit, OnDestroy {
       //map(data => data.results ?? data.carrierStopMatrixSlice?.[0] ?? throwErr(`No carrierstop matrix! ${JSON.stringify(data)}`)),
       map(data => new Results(data)),
     );
-
-    //this.searchQuery$ = this.flightStateService.getQuery();
   }
 
   /**
@@ -102,6 +102,15 @@ export class ResultsPageComponent implements OnInit, OnDestroy {
     }
   }
 
+  makePagesFromArray(results: Results) {
+    this.numPages = results.results.length/10;
+    let papers = [];
+    for (var i=1; i-1<(results.results.length/10); i++) {
+      papers[i] = results.results.slice((i*10)-10, (i*10)-1);;
+    }
+    return papers;
+  }
+
   getColour(topic: string) {
     return this.colours[topic];
   }
@@ -111,7 +120,6 @@ export class ResultsPageComponent implements OnInit, OnDestroy {
       width: '900px',
       data: {}
     });
-    console.log('hi');
   }
 
   filterTopics() {
@@ -119,28 +127,12 @@ export class ResultsPageComponent implements OnInit, OnDestroy {
       width: '900px',
       data: {}
     });
-    console.log('hi');
   }
 
   filterYears() {
     const dialogRef = this.dialog.open(PubyearFilterModalComponent, {
       width: '900px',
       data: {}
-    });
-    console.log('hi');
-  }
-
-  /**
-   * Handles updates to the filter
-   * Always a follow-up request
-   * @param update: filter elements that need to be updated
-   */
-  updateFilter(update: Partial<SearchQuery>) {
-    this.loading = true;
-    this.resultsService.updateQuery({
-      ...update,
-      propagate: true,
-      type: "follow-up",
     });
   }
 

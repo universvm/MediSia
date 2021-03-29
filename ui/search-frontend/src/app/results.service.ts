@@ -8,10 +8,10 @@ import { SearchService } from './search.service';
 
 export interface SearchQuery {
   readonly query: string | null;
-  readonly categories: string[] | null;
+  readonly categories: string | null;
   //readonly author: string[] | null;
-  readonly journals: string[] | null;
-  readonly pubyears: number[] | null;
+  readonly journals: string | null;
+  readonly pubyears: string | null;
   readonly deep: boolean;
   readonly type: "new" | "follow-up";
   readonly propagate: boolean;
@@ -59,6 +59,7 @@ export class ResultsService {
       tap((parsed: ResultsJson) => {
         this.journals = new Set(parsed.journals);
         this.pubyears = new Set(parsed.pubyears);
+        this.categories = new Set(parsed.categories);
         this.updateQuery({
           type: "follow-up",
           propagate: false,

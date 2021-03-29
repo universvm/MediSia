@@ -2,7 +2,7 @@
 <mat-selection-list mat-dialog-content
   (selectionChange)="onSelChange($event)">
   <mat-list-option *ngFor="let journal of journals" checkboxPosition="before"
-    [selected]="includedJournals?.includes(journal)" [value]="journal">
+    [selected]="check(journal)" [value]="journal">
     <div class="container">
       <span class="short-name" style="font-weight: bold;">{{ journal }}</span>
     </div>
