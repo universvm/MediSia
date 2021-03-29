@@ -55,7 +55,7 @@ export class QueryService {
     params = params + "&deep=" + this.makeStringFromBool(query.deep);
     console.log("params " + params)
     return this.http.get(
-        'http://127.0.0.1' + '/search' + params,
+        'http://127.0.0.1:8000' + '/search' + params,
       );
   }
 
