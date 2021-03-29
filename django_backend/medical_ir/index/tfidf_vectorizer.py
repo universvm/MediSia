@@ -12,7 +12,7 @@ from gensim.models import TfidfModel
 from gensim.parsing.preprocessing import PorterStemmer
 from tqdm import tqdm
 
-from config import (
+from medical_ir.config import (
     BIOPAPERS_JSON_PATH,
     BOW_PATH,
     DATA_FOLDER,
@@ -23,7 +23,7 @@ from config import (
     BIOPAPERS_W_ABSTRACT_JSON_PATH,
     BOW_LENGTH,
 )
-from config import (
+from medical_ir.config import (
     spaces,
     num_alpha,
     alpha_num,

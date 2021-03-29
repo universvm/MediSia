@@ -19,8 +19,8 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
-from config import INDECES_FOLDER
-from index.unpaywall_process import build_journal_category_dict
+from medical_ir.config import INDECES_FOLDER
+from medical_ir.index.unpaywall_process import build_journal_category_dict
 
 
 class ModelTrainer:

@@ -15,15 +15,15 @@ from gensim.matutils import sparse2full
 from gensim.test.utils import get_tmpfile
 from gensim.similarities.docsim import Similarity, SparseMatrixSimilarity
 
-from config import (
+from medical_ir.config import (
     INDECES_FOLDER,
     QUERY_CLASSIFIER,
     BOW_LENGTH,
     MEDICINE_SHARDS,
     ALL_SHARDS,
 )
-from index.tfidf_vectorizer import convert_str_to_tfidf
-from index.unpaywall_process import build_journal_category_dict
+from medical_ir.index.tfidf_vectorizer import convert_str_to_tfidf
+from medical_ir.index.unpaywall_process import build_journal_category_dict
 
 # Turning off gensim printouts:
 import logging

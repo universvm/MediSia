@@ -27,8 +27,8 @@ from pdfminer.pdfparser import PDFParser
 from selenium import webdriver
 from xvfbwrapper import Xvfb
 
-from index.tfidf_vectorizer import clean_and_tokenize_text
-from config import (
+from medical_ir.index.tfidf_vectorizer import clean_and_tokenize_text
+from medical_ir.config import (
     PAPERS_JSON_FOLDER,
     BIOJOURNALS_CATEGORIES_FILE,
     BIOPAPERS_JSON_PATH,
@@ -69,7 +69,7 @@ def build_journal_category_dict(
     journal_to_category = {}
     categories_list = []
     # Open file and read line by line
-    with open(journals_categories_path, "r") as f:
+    with open(journals_categories_path, "r", encoding='utf-8') as f:
         flines = f.readlines()
         for line in flines:
             # Extract category and journals
