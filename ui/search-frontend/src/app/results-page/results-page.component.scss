@@ -1,0 +1,61 @@
+  .content {
+    margin-left: 2.5%;
+    margin-right: 2.5%;
+  }
+
+  .matrix-spinner {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 2vh;
+    margin-bottom: 2vh;
+  }
+
+  .sources {
+    display: flex;
+    flex-direction: column;
+    color: #6D9F74;
+  }
+
+  .authors {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .title {
+    font-size: 18px;
+    color: rgb(39, 39, 179);
+  }
+
+  .header {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .topic {
+    margin-left: 10px;
+  }
+
+  .page-title {
+    font-size: 18px;
+    color: gray;
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+
+  .filters {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+
+  .filter {
+    margin-right: 20px;
+  }
+
+  ::ng-deep .filters .mat-button, .mat-icon-button, .mat-stroked-button, .mat-flat-button {
+    line-height: 36px !important;
+  }
+
+  ::ng-deep .mat-button, .mat-icon-button, .mat-flat-button {
+    line-height: 24px !important;
+  }

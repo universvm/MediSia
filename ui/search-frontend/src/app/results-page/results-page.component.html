@@ -1,0 +1,47 @@
+<div class="content">
+    <div class="page-title">
+        Showing search results for {{ title }}
+    </div>
+    <div>
+    <div class="filters">
+        <button class="filter" mat-stroked-button color="accent" type="button" (click)="filterTopics()">
+            <mat-icon>filter_alt</mat-icon> Filter by category
+        </button>
+        <button class="filter" mat-stroked-button color="accent" type="button" (click)="filterJournals()">
+            <mat-icon>filter_alt</mat-icon> Filter by journal
+        </button>
+        <button class="filter" mat-stroked-button color="accent" type="button" (click)="filterYears()">
+            <mat-icon>filter_alt</mat-icon> Filter by publication year
+        </button>
+    </div>
+    <div *ngIf="!loading">
+    <!---div *ngIf="results | async as results"-->
+        <div *ngFor="let paper of (results | async)?.results, let i = index">
+        <br />
+        <div class="header">
+            <a class="title" href="{{paper.url}}" target="_blank"><b>{{ paper.title }}</b></a>
+            <button mat-flat-button class="topic" [style.background-color]="getColour(paper.topic)" style="color: white;" type="button" (click)="filterYears()">{{ paper.topic }}</button>
+        </div>
+        <div class="sources">
+            <div *ngIf="paper.authors !== null" class="authors"> 
+                <div *ngFor="let author of paper.authors, let i = index">
+                    <div *ngIf="i == 0">
+                        {{ author.name }}
+                    </div>
+                    <div *ngIf="i >= 1">
+                        , {{ author.name }}
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="paper.authors === null" class="authors">
+                No authors available
+            </div>
+            {{ paper.journal }}, {{ paper.pubyear }}
+        </div>
+        {{ paper.abstract }}
+    </div>
+    </div>
+    <!--/div-->
+    <mat-spinner class="matrix-spinner" *ngIf="loading"></mat-spinner>
+</div>
+</div>
