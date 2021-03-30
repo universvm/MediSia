@@ -1,61 +1,80 @@
-  .content {
-    margin-left: 2.5%;
-    margin-right: 2.5%;
-  }
+.content {
+  margin-left: 2.5%;
+  margin-right: 2.5%;
+}
 
-  .matrix-spinner {
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 2vh;
-    margin-bottom: 2vh;
-  }
+.matrix-spinner {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 2vh;
+  margin-bottom: 2vh;
+}
 
-  .sources {
-    display: flex;
-    flex-direction: column;
-    color: #6D9F74;
-  }
+.sources {
+  display: flex;
+  flex-direction: column;
+  color: #6D9F74;
+}
 
-  .authors {
-    display: flex;
-    flex-direction: row;
-  }
+.top {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-bottom: 1px solid gray;
+}
 
-  .title {
-    font-size: 18px;
-    color: rgb(39, 39, 179);
-  }
+.text {
+  color: gray;
+  font-size: 12px;
+}
 
-  .header {
-    display: flex;
-    flex-direction: row;
-  }
+.page-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
 
-  .topic {
-    margin-left: 10px;
-  }
+.authors {
+  display: flex;
+  flex-direction: row;
+}
 
-  .page-title {
-    font-size: 18px;
-    color: gray;
-    padding-top: 20px;
-    padding-bottom: 20px;
-  }
+.title {
+  font-size: 18px;
+  color: rgb(39, 39, 179);
+}
 
-  .filters {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-  }
+.header {
+  display: flex;
+  flex-direction: row;
+}
 
-  .filter {
-    margin-right: 20px;
-  }
+.topic {
+  margin-left: 10px;
+}
 
-  ::ng-deep .filters .mat-button, .mat-icon-button, .mat-stroked-button, .mat-flat-button {
-    line-height: 36px !important;
-  }
+.page-title {
+  font-size: 18px;
+  color: gray;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
 
-  ::ng-deep .mat-button, .mat-icon-button, .mat-flat-button {
-    line-height: 24px !important;
-  }
+.filters {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+
+.filter {
+  margin-right: 20px;
+}
+
+::ng-deep .filters .mat-button, .mat-icon-button, .mat-stroked-button, .mat-flat-button {
+  line-height: 36px !important;
+}
+
+::ng-deep .mat-button, .mat-icon-button, .mat-flat-button {
+  line-height: 24px !important;
+}
