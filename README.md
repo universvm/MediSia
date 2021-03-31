@@ -29,10 +29,10 @@ open-access research.
 
 Below is a diagram that illustrates the general search process and the different types of searches available:
 
-![](img/overview.png =300x)
+![](img/overview.png)
 *Overview of search retrieval system.*
 
-![](img/overview_2.png =300x)
+![](img/overview_2.png)
 *Distinction across three search functionalities*
 
 For a ranked search this is the main logic:
