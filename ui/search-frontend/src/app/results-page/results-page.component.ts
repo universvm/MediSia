@@ -73,6 +73,10 @@ export class ResultsPageComponent implements OnInit, OnDestroy {
     this.bugout.log(this.title + ": " + paper.title);
   }
 
+  returnToSearch() {
+    this.router.navigate(['search']);
+  }
+
   createTitle() {
     if (this.searchService.searchData === null) return "";
     var temp = "\"" + this.searchService.searchData!.query;
