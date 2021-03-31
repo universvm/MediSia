@@ -179,7 +179,7 @@ export class ResultsPageComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.unsubscribers.forEach(a => a());
-    this.bugout.downloadLog();
+    //this.bugout.downloadLog();
   }
 
 }
