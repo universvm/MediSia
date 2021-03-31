@@ -9,7 +9,6 @@ import { SearchService } from './search.service';
 export interface SearchQuery {
   readonly query: string | null;
   readonly categories: string | null;
-  //readonly author: string[] | null;
   readonly journals: string | null;
   readonly pubyears: string | null;
   readonly deep: boolean;
@@ -21,10 +20,8 @@ export interface SearchQuery {
   providedIn: 'root'
 })
 export class ResultsService {
-  //searchData: SearchData | null = null;
   categories: Set<string> = new Set(['medicine', 'botany', 'immunology']);
   journals: Set<string> = new Set(['journal1','journal2','journal3','journal4','journal5']);
-  //authors: Set<string> = new Set();
   pubyears: Set<number> = new Set([2017, 2019, 2020]);
 
   /**
@@ -81,7 +78,7 @@ export class ResultsService {
 
   /**
    * Resets the query to default state.
-   * Used in flight-page's ngOnInit to handle the case where the user navigates from /itinerary to /search
+   * Used in search-page's ngOnInit 
    */
   public reset() {
     this.query$.next(ResultsService.defaultSearchQuery);

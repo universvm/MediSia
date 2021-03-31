@@ -16,11 +16,6 @@ export class PubyearFilterModalComponent implements OnInit {
   includedYears: string[] = [];
   originalYears: string[] = [];
 
-  //filter: SolutionFilter = INITIALIZE_LATER;
-  //flightsData: travel.matrix.IResult = INITIALIZE_LATER;
-
-  //private unsubscribers: (() => void)[] = [];
-
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: string[],
     private resultsService: ResultsService,
@@ -64,20 +59,5 @@ export class PubyearFilterModalComponent implements OnInit {
     this.searchService.searchData!.pubyears = this.originalYears.join();
     console.log(this.searchService.searchData!.pubyears);
   }
-  //isAllSelected(includedJournals = this.filter.includedJournals) {
-    //return includedJournals === null || this.carrierList?.groups?.every(c => includedCarrierCodes.has(c.label.code));
-  //}
-
-  //deselectAll() {
-    //this.data.updateFilter({
-      //includedCarrierCodes: new Set(),
-    //});
-  //}
-
-  //selectAll() {
-    //this.data.updateFilter({
-      //includedCarrierCodes: null,
-    //});
-  //}
 
 }

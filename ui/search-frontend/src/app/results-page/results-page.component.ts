@@ -81,7 +81,6 @@ export class ResultsPageComponent implements OnInit, OnDestroy {
     if (this.searchService.searchData === null) return "";
     var temp = "\"" + this.searchService.searchData!.query;
     if (this.searchService.searchData!.categories !== null) temp = temp + ", " + this.searchService.searchData!.categories;
-    //if (this.searchService.searchData!.author !== null) temp = temp + ", " + this.searchService.searchData!.author;
     if (this.searchService.searchData!.journals !== null) temp = temp + ", " + this.searchService.searchData!.journals;
     if (this.searchService.searchData!.pubyears !== null) temp = temp + ", " + this.searchService.searchData!.pubyears;
     return temp + "\"";

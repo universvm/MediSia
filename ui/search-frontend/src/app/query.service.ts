@@ -5,18 +5,10 @@ import { switchMap, delay, tap } from 'rxjs/operators';
 import { ResultsJson } from './results-page/results.types';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 
-//const httpHeaders = new HttpHeaders({
-  //'Content-Type': 'application/json',
-  //'Accept': 'application/json',
-  //'Access-Control-Allow-Origin': '*',
-//});
-
 @Injectable({
   providedIn: 'root'
 })
 export class QueryService {
-
-  //private static readonly headers = new HttpHeaders(httpHeaders);
 
   constructor(private http: HttpClient) { }
 
@@ -27,7 +19,7 @@ export class QueryService {
   getSearchData(input: Observable<SearchQuery>): Observable<ResultsJson> {
     console.log("getSearchData")
     return input.pipe(
-      delay(250),  // debounce; can't use debounceTime because this observable only triggers once
+      delay(250),  
       switchMap((q) => this.fetchSearch(q))
     );
   }
@@ -38,7 +30,6 @@ export class QueryService {
   fetchSearch(query: SearchQuery): Observable<any> {
     console.log("searching")
     let params = "";
-    console.log("query " + query)
     if (query.query) {
       params = params + "?query=" + query.query;
     }
