@@ -101,6 +101,7 @@ export class Paper {
     journal: string;
     url: string;
     topic: string;
+    irrelevant: boolean = false;
 
     constructor(paperJson: PaperJson) {
         this.title = paperJson.title;

@@ -68,8 +68,9 @@ export class ResultsPageComponent implements OnInit, OnDestroy {
     this.title = this.createTitle();
   }
 
-  markIrrelevant(title: string) {
-    this.bugout.log(this.title + ": " + title);
+  markIrrelevant(paper: Paper) {
+    paper.irrelevant = true;
+    this.bugout.log(this.title + ": " + paper.title);
   }
 
   createTitle() {

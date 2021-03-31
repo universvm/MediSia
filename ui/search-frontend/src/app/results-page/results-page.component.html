@@ -38,7 +38,7 @@
             <a class="title" href="{{paper.url}}" target="_blank"><b>{{ paper.title }}</b></a>
             <div class="irrelevant">
             <mat-icon class="dropdown">arrow_drop_down</mat-icon>
-            <div class="hidden" (click)="markIrrelevant(paper.title)">Mark as irrelevant</div>
+            <div class="hidden" (click)="markIrrelevant(paper)">{{paper.irrelevant ? 'Marked as irrelevant; this result will be reviewed' : 'Mark as irrelevant'}}</div>
             </div>
             <button mat-flat-button class="topic" [style.background-color]="getColour(paper.topic)" style="color: white;" type="button" (click)="applyCategory(paper.topic)">{{ paper.topic }}</button>
         </div>
