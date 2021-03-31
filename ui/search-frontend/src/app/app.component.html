@@ -1,46 +1,25 @@
 <div class="site">
-    <!--mat-toolbar *ngIf="showBanner" color="primary">
-        <mat-toolbar-row>
-            <div class="banner-content">
-                <span>Welcome to (enter title)!</span>
-                <button mat-raised-button color="accent" class="new" (click)="openWelcomeModal()">Learn more</button>
-            </div>
-            <button (click)="closeBanner()" mat-icon-button>
-                <mat-icon>clear</mat-icon>
-            </button>
-        </mat-toolbar-row>
-    </mat-toolbar-->
     <header class="header">
         <div class='container'>
             <div class="left-header">
-                <a href="/" class="matrix-theme-styled-logo">
-                    <img class="inline img" src="/assets/candidate.png" />
+                <a href="/" class="theme-styled-logo">
+                    <img class="inline img" src="/assets/logo.png" />
                 </a>
-                <a href="/" class="matrix-title"> <!-- Raw link instead of a router navigate; we don't want to keep state -->
+                <a href="/" class="top-title"> <!-- Raw link instead of a router navigate; we don't want to keep state -->
                     <h1 class="title">
                         MediSia
                     </h1>
                 </a>
             </div>
-            <!--div class="right-header">
-                <a mat-button class="inline itaHelpLink"
-                    href="https://google.com/support/faqs/bin/answer.py?answer=1739452" target="_blank">Help</a>
-                <button mat-button (click)="sendFeedback()">
-                    Send Feedback
-                </button>
-                <button (click)="toggleTheme()" mat-icon-button>
-                    <mat-icon>brightness_6</mat-icon>
-                </button>
-            </div-->
         </div>
     </header>
     <mat-divider></mat-divider>
     <router-outlet class="Site-content"></router-outlet>
-    <div class="footer matrix-theme-styled-even-darker-background">
+    <div class="footer theme-styled-even-darker-background">
         <div class="footer-text">
             <p>
                 Search results provided are not the property
-                of <span class="nowrap">this site</span> and may be protected
+                of <span class="nowrap">MediSia</span> and may be protected
                 by trademark, copyright, patent and other laws. Please be respectful 
                 of the sources.
             </p>

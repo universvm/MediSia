@@ -1,10 +1,13 @@
 <div class="content">
+    <button mat-raised-button color="primary" type="button" class="back-button" (click)="returnToSearch()">
+        <mat-icon>arrow_back</mat-icon> Back to search
+    </button>
     <div class="page-title">
         Showing search results for {{ title }}
     </div>
     <div>
     <div class="filters">
-        <button class="filter" mat-stroked-button color="accent" type="button" (click)="filterTopics()">
+        <button *ngIf="checkIfCategoryFilter()" class="filter" mat-stroked-button color="accent" type="button" (click)="filterTopics()">
             <mat-icon>filter_alt</mat-icon> Filter by category
         </button>
         <button class="filter" mat-stroked-button color="accent" type="button" (click)="filterJournals()">
@@ -15,12 +18,32 @@
         </button>
     </div>
     <div *ngIf="!loading">
-    <!---div *ngIf="results | async as results"-->
-        <div *ngFor="let paper of (results | async)?.results, let i = index">
+    <div *ngIf="results | async as results">
+        <div class="top">
+            <div class="text">
+                retrieved in {{timeForSearch/1000}}s
+            </div>
+            <div class="page-buttons">
+                <button *ngIf="numPages !== 0" mat-icon-button (click)="prevPage()">
+                    <mat-icon>keyboard_arrow_left</mat-icon>
+                </button>
+                <div>
+                    Page {{numPages + 1}}
+                </div>
+                <button *ngIf="numPages !== results.length - 1" mat-icon-button (click)="nextPage()">
+                    <mat-icon>keyboard_arrow_right</mat-icon>
+                </button>
+            </div>
+        </div>
+        <div *ngFor="let paper of results[numPages], let i = index">
         <br />
         <div class="header">
             <a class="title" href="{{paper.url}}" target="_blank"><b>{{ paper.title }}</b></a>
-            <button mat-flat-button class="topic" [style.background-color]="getColour(paper.topic)" style="color: white;" type="button" (click)="filterYears()">{{ paper.topic }}</button>
+            <div class="irrelevant">
+            <mat-icon class="dropdown">arrow_drop_down</mat-icon>
+            <div class="hidden" (click)="markIrrelevant(paper)">{{paper.irrelevant ? 'Marked as irrelevant; this result will be reviewed' : 'Mark as irrelevant'}}</div>
+            </div>
+            <button mat-flat-button class="topic" [style.background-color]="getColour(paper.topic)" style="color: white;" type="button" (click)="applyCategory(paper.topic)">{{ paper.topic }}</button>
         </div>
         <div class="sources">
             <div *ngIf="paper.authors !== null" class="authors"> 
@@ -41,7 +64,8 @@
         {{ paper.abstract }}
     </div>
     </div>
-    <!--/div-->
-    <mat-spinner class="matrix-spinner" *ngIf="loading"></mat-spinner>
+    </div>
+    <mat-spinner class="spinner" *ngIf="loading"></mat-spinner>
 </div>
 </div>
+

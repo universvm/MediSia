@@ -16,11 +16,6 @@ export class JournalFilterModalComponent implements OnInit {
   includedJournals: string[] = [];
   originalJournals: string[] = [];
 
-  //filter: SolutionFilter = INITIALIZE_LATER;
-  //flightsData: travel.matrix.IResult = INITIALIZE_LATER;
-
-  //private unsubscribers: (() => void)[] = [];
-
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
     private resultsService: ResultsService,
@@ -68,20 +63,5 @@ export class JournalFilterModalComponent implements OnInit {
     this.searchService.searchData!.journals = this.originalJournals.join();
     console.log(this.searchService.searchData!.journals);
   }
-  //isAllSelected(includedJournals = this.filter.includedJournals) {
-    //return includedJournals === null || this.carrierList?.groups?.every(c => includedCarrierCodes.has(c.label.code));
-  //}
-
-  //deselectAll() {
-    //this.data.updateFilter({
-      //includedCarrierCodes: new Set(),
-    //});
-  //}
-
-  //selectAll() {
-    //this.data.updateFilter({
-      //includedCarrierCodes: null,
-    //});
-  //}
 
 }

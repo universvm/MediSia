@@ -1,61 +1,99 @@
-  .content {
-    margin-left: 2.5%;
-    margin-right: 2.5%;
-  }
+.content {
+  margin-left: 2.5%;
+  margin-right: 2.5%;
+}
 
-  .matrix-spinner {
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 2vh;
-    margin-bottom: 2vh;
-  }
+.spinner {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 2vh;
+  margin-bottom: 2vh;
+}
 
-  .sources {
-    display: flex;
-    flex-direction: column;
-    color: #6D9F74;
-  }
+.sources {
+  display: flex;
+  flex-direction: column;
+  color: #6D9F74;
+}
 
-  .authors {
-    display: flex;
-    flex-direction: row;
-  }
+.top {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-bottom: 1px solid gray;
+}
 
-  .title {
-    font-size: 18px;
-    color: rgb(39, 39, 179);
-  }
+.hidden {
+  display: none;
+  //margin-left: 30px;
+  background-color: gray;
+  color: white;
+  padding-left: 5px;
+  padding-right: 5px;
+  border: 1px solid black;
+}
 
-  .header {
-    display: flex;
-    flex-direction: row;
-  }
+.irrelevant:hover > .hidden {
+  display: inline;
+  cursor: pointer;
+}
 
-  .topic {
-    margin-left: 10px;
-  }
+.back-button {
+  margin-top: 15px;
+}
 
-  .page-title {
-    font-size: 18px;
-    color: gray;
-    padding-top: 20px;
-    padding-bottom: 20px;
-  }
+.text {
+  color: gray;
+  font-size: 12px;
+}
 
-  .filters {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-  }
+.page-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
 
-  .filter {
-    margin-right: 20px;
-  }
+.authors {
+  display: flex;
+  flex-direction: row;
+}
 
-  ::ng-deep .filters .mat-button, .mat-icon-button, .mat-stroked-button, .mat-flat-button {
-    line-height: 36px !important;
-  }
+.title {
+  font-size: 18px;
+  color: rgb(39, 39, 179);
+}
 
-  ::ng-deep .mat-button, .mat-icon-button, .mat-flat-button {
-    line-height: 24px !important;
-  }
+.header {
+  display: flex;
+  flex-direction: row;
+}
+
+.topic {
+  margin-left: 10px;
+}
+
+.page-title {
+  font-size: 18px;
+  color: gray;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+.filters {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+
+.filter {
+  margin-right: 20px;
+}
+
+::ng-deep .filters .mat-button, .mat-icon-button, .mat-stroked-button, .mat-flat-button {
+  line-height: 36px !important;
+}
+
+::ng-deep .mat-button, .mat-icon-button, .mat-flat-button {
+  line-height: 24px !important;
+}

@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy, Output } from '@angular/core';
-import testdata from '../../assets/testdata.json';
 import { Results, Paper, ResultsJson } from './results.types';
 import { MatDialog } from '@angular/material/dialog';
 import { JournalFilterModalComponent } from './journal-filter-modal/journal-filter-modal.component';
@@ -10,6 +9,7 @@ import { SearchService } from '../search.service';
 import { tap, map, filter } from 'rxjs/operators';
 import { ReplaySubject, Observable } from 'rxjs';
 import { Router } from '@angular/router';
+import { Debugout } from 'debugout.js';
 
 @Component({
   selector: 'app-results-page',
@@ -18,13 +18,16 @@ import { Router } from '@angular/router';
 })
 export class ResultsPageComponent implements OnInit, OnDestroy {
   readonly resultsData$ = new ReplaySubject<ResultsJson | null>(1);
-  results: Observable<Results> = new Observable();
+  results: Observable<Paper[][]> = new Observable();
   numPages: number = 0;
   pages: Paper[][] = [];
+  timeForSearch: number = 0;
 
   loading = true;
 
   private readonly unsubscribers: (() => void)[] = [];
+
+  bugout = new Debugout();
 
   title: string = "";
   colours: {[topic: string]: string} = {
@@ -65,11 +68,19 @@ export class ResultsPageComponent implements OnInit, OnDestroy {
     this.title = this.createTitle();
   }
 
+  markIrrelevant(paper: Paper) {
+    paper.irrelevant = true;
+    this.bugout.log(this.title + ": " + paper.title);
+  }
+
+  returnToSearch() {
+    this.router.navigate(['search']);
+  }
+
   createTitle() {
     if (this.searchService.searchData === null) return "";
     var temp = "\"" + this.searchService.searchData!.query;
     if (this.searchService.searchData!.categories !== null) temp = temp + ", " + this.searchService.searchData!.categories;
-    //if (this.searchService.searchData!.author !== null) temp = temp + ", " + this.searchService.searchData!.author;
     if (this.searchService.searchData!.journals !== null) temp = temp + ", " + this.searchService.searchData!.journals;
     if (this.searchService.searchData!.pubyears !== null) temp = temp + ", " + this.searchService.searchData!.pubyears;
     return temp + "\"";
@@ -77,6 +88,7 @@ export class ResultsPageComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.checkIfComingFromSearch();
+    let start = performance.now();
     const subscription = this.resultsService.result$.pipe(
       tap(() => this.loading = false),
     ).subscribe(this.resultsData$);
@@ -84,8 +96,13 @@ export class ResultsPageComponent implements OnInit, OnDestroy {
 
     this.results = this.resultsData$.pipe(
       filter((data): data is ResultsJson => data !== null),
-      //map(data => data.results ?? data.carrierStopMatrixSlice?.[0] ?? throwErr(`No carrierstop matrix! ${JSON.stringify(data)}`)),
-      map(data => new Results(data)),
+      map(data => {
+        if (this.timeForSearch === 0) {
+          this.timeForSearch = Math.floor(performance.now() - start);
+          this.bugout.log(this.title + ": " + this.timeForSearch + "ms");
+        };
+        return this.makePagesFromArray(new Results(data))
+      }),
     );
   }
 
@@ -103,12 +120,35 @@ export class ResultsPageComponent implements OnInit, OnDestroy {
   }
 
   makePagesFromArray(results: Results) {
-    this.numPages = results.results.length/10;
     let papers = [];
     for (var i=1; i-1<(results.results.length/10); i++) {
-      papers[i] = results.results.slice((i*10)-10, (i*10)-1);;
+      papers[i-1] = results.results.slice((i*10)-10, (i*10)-1);;
     }
+    console.log(papers)
     return papers;
+  }
+
+  nextPage() {
+    this.numPages = this.numPages + 1;
+  }
+
+  prevPage() {
+    this.numPages = this.numPages - 1;
+  }
+
+  applyCategory(category: string) {
+    this.searchService.searchData!.categories = category;
+    this.resultsService.updateQuery({
+      categories: this.searchService.searchData!.categories,
+      type: "follow-up",
+      propagate: true,
+    });
+    this.numPages = 0;
+  }
+
+  checkIfCategoryFilter() {
+    if (this.searchService.searchData!.categories !== null) return false;
+    else return true;
   }
 
   getColour(topic: string) {
@@ -138,6 +178,8 @@ export class ResultsPageComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.unsubscribers.forEach(a => a());
+    //this.bugout.downloadLog();
   }
 
 }
+

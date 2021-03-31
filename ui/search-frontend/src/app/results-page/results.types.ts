@@ -1,6 +1,5 @@
 export type ResultsJson = {
     "categories": string[];
-    //"authors": string[];
     "journals": string[];
     "pubyears": number[];
     "results": 
@@ -79,14 +78,12 @@ export type AuthorJson = {
 
 export class Results {
     categories: string[];
-    //authors: string[];
     journals: string[];
     pubyears: number[];
     results: Paper[];
 
     constructor(resultsJson: ResultsJson) {
         this.categories = resultsJson.categories;
-        //this.authors = resultsJson.authors;
         this.journals = resultsJson.journals;
         this.pubyears = resultsJson.pubyears;
         this.results = resultsJson.results.map(result => {return new Paper(result)})
@@ -101,6 +98,7 @@ export class Paper {
     journal: string;
     url: string;
     topic: string;
+    irrelevant: boolean = false;
 
     constructor(paperJson: PaperJson) {
         this.title = paperJson.title;

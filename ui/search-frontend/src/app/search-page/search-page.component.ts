@@ -9,7 +9,6 @@ import { ResultsService } from '../results.service';
 export interface SearchData {
   query: string | null;
   categories: string | null;
-  //author: string[] | null;
   journals: string | null;
   pubyears: string | null;
   deep: boolean;
@@ -32,7 +31,6 @@ export class SearchPageComponent implements OnInit {
   searchForm = new FormGroup({
     query: new FormControl(null, [Validators.required]),
     categories: new FormControl(null, [this.categoryValidator]),
-    //author: new FormControl(null),
     journals: new FormControl(null),
     pubyears: new FormControl(null, [this.pubYearValidator]),
     deep: new FormControl(false),
@@ -63,7 +61,6 @@ export class SearchPageComponent implements OnInit {
     const value: SearchData = this.searchForm.value;
     // when sending to backend, atm if !isAdvanced, set those fields to null regardless of input
     if (!this.isAdvanced) {
-      //value.author = null;
       value.categories = null;
       value.journals = null;
       value.pubyears = null;
@@ -86,7 +83,7 @@ export class SearchPageComponent implements OnInit {
   }
 
   pubYearValidator(control: AbstractControl): ValidationErrors | null {
-    const regex = RegExp(/^(\d){4}(( )?-( )?(\d){4})?( )?$/); //make regex handle year/rangeg
+    const regex = RegExp(/^(\d){4}(( )?-( )?(\d){4})?( )?$/); //make regex handle year/range
     const matches = regex.test(control.value);
     if (control.value === null || control.value === '') {
       return null;
