@@ -24,6 +24,20 @@
   border-bottom: 1px solid gray;
 }
 
+.hidden {
+  display: none;
+  margin-left: 30px;
+  background-color: gray;
+  color: white;
+  padding-left: 5px;
+  padding-right: 5px;
+  border: 1px solid black;
+}
+
+.header:hover > .hidden {
+  display: inline;
+}
+
 .text {
   color: gray;
   font-size: 12px;

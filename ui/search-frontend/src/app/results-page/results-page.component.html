@@ -37,6 +37,7 @@
         <div class="header">
             <a class="title" href="{{paper.url}}" target="_blank"><b>{{ paper.title }}</b></a>
             <button mat-flat-button class="topic" [style.background-color]="getColour(paper.topic)" style="color: white;" type="button" (click)="applyCategory(paper.topic)">{{ paper.topic }}</button>
+            <div class="hidden" (click)="markIrrelevant(paper.title)">Mark as irrelevant</div>
         </div>
         <div class="sources">
             <div *ngIf="paper.authors !== null" class="authors"> 

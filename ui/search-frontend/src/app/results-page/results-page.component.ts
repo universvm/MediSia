@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy, Output } from '@angular/core';
-import testdata from '../../assets/testdata.json';
 import { Results, Paper, ResultsJson } from './results.types';
 import { MatDialog } from '@angular/material/dialog';
 import { JournalFilterModalComponent } from './journal-filter-modal/journal-filter-modal.component';
@@ -10,6 +9,7 @@ import { SearchService } from '../search.service';
 import { tap, map, filter } from 'rxjs/operators';
 import { ReplaySubject, Observable } from 'rxjs';
 import { Router } from '@angular/router';
+import { Debugout } from 'debugout.js';
 
 @Component({
   selector: 'app-results-page',
@@ -26,6 +26,8 @@ export class ResultsPageComponent implements OnInit, OnDestroy {
   loading = true;
 
   private readonly unsubscribers: (() => void)[] = [];
+
+  bugout = new Debugout();
 
   title: string = "";
   colours: {[topic: string]: string} = {
@@ -66,6 +68,10 @@ export class ResultsPageComponent implements OnInit, OnDestroy {
     this.title = this.createTitle();
   }
 
+  markIrrelevant(title: string) {
+    this.bugout.log(this.title + ": " + title);
+  }
+
   createTitle() {
     if (this.searchService.searchData === null) return "";
     var temp = "\"" + this.searchService.searchData!.query;
@@ -87,7 +93,10 @@ export class ResultsPageComponent implements OnInit, OnDestroy {
     this.results = this.resultsData$.pipe(
       filter((data): data is ResultsJson => data !== null),
       map(data => {
-        if (this.timeForSearch === 0) this.timeForSearch = Math.floor(performance.now() - start);
+        if (this.timeForSearch === 0) {
+          this.timeForSearch = Math.floor(performance.now() - start);
+          this.bugout.log(this.title + ": " + this.timeForSearch + "ms");
+        };
         return this.makePagesFromArray(new Results(data))
       }),
     );
@@ -165,6 +174,7 @@ export class ResultsPageComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.unsubscribers.forEach(a => a());
+    this.bugout.downloadLog();
   }
 
 }
